@@ -1,0 +1,3918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>哲学家对话 - 《被讨厌的勇气》交互式学习</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600;700&display=swap');
+    
+    :root {
+      --bg: #1e1a16;
+      --bg-card: #2a2622;
+      --bg-input: #24201c;
+      --border: #423c34;
+      --text: #f2ede6;
+      --text-muted: #9a958a;
+      --text-dim: #6d6860;
+      --adler: #e07b39;
+      --adler-glow: rgba(224, 123, 57, 0.35);
+      --zhuangzi: #4db6ac;
+      --zhuangzi-glow: rgba(77, 182, 172, 0.35);
+      --socrates: #5c9ece;
+      --socrates-glow: rgba(92, 158, 206, 0.35);
+      --nietzsche: #a57dc2;
+      --nietzsche-glow: rgba(165, 125, 194, 0.35);
+      --user-bg: #2d2a26;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html { scroll-behavior: smooth; }
+    
+    body {
+      font-family: 'Source Han Sans CN', 'Noto Sans CJK SC', 'PingFang SC', 'Microsoft YaHei', 'Roboto', 'Noto Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      background-image: 
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 8px),
+        repeating-linear-gradient(135deg, rgba(255,255,255,0.01) 0px, rgba(255,255,255,0.01) 1px, transparent 1px, transparent 6px),
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+      background-blend-mode: soft-light;
+      background-size: auto, auto, 200px 200px;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(60, 50, 40, 0.25) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60%;
+      background: radial-gradient(ellipse at 50% 80%, rgba(224, 123, 57, 0.05), transparent);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .app-container {
+      display: flex;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .mode-sidebar {
+      width: 80px;
+      background: rgba(34, 30, 26, 0.95);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 10px;
+      gap: 16px;
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    
+    .mode-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 10px;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.25s ease, transform 0.1s;
+      font-family: inherit;
+      font-size: 0.85rem;
+      gap: 10px;
+      text-align: center;
+    }
+    
+    .mode-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      transform: translateY(-2px);
+    }
+    
+    .mode-btn.active {
+      background: rgba(224, 123, 57, 0.15);
+      border-color: var(--adler);
+      color: var(--adler);
+      box-shadow: 0 0 20px var(--adler-glow);
+    }
+    
+    .mode-btn:active {
+      transform: scale(0.97);
+    }
+    
+    .mode-btn .icon {
+      font-size: 1.8rem;
+    }
+    
+    .mode-btn span {
+      font-weight: 500;
+    }
+    
+    .main-content {
+      flex: 1;
+      margin-left: 80px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+    
+    .icon-btn:hover {
+      background: var(--bg-card);
+      border-color: var(--text-muted);
+    }
+    
+    .fixed-header {
+      position: sticky;
+      top: 0;
+      background: rgba(34, 30, 26, 0.95);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+    
+    .app-title {
+      font-size: 1.5rem;
+      font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+      font-weight: 700;
+      color: var(--text);
+      text-align: left;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .header-top .app-title {
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      text-align: left;
+      border: none;
+    }
+    
+    .menu-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      display: none;
+    }
+    
+    .menu-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      min-width: 160px;
+      display: none;
+    }
+    
+    .dropdown-menu.show {
+      display: block;
+    }
+    
+    .dropdown-item {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    
+    .dropdown-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .app-subtitle {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: left;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      padding: 0 20px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    
+    .app-subtitle:hover {
+      color: var(--text);
+    }
+    
+    .action-buttons {
+      padding: 12px 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-start;
+      background: rgba(34, 30, 26, 0.5);
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: inherit;
+      transition: all 0.2s ease, transform 0.1s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: center;
+      min-width: 80px;
+    }
+    
+    .action-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--text-muted);
+    }
+    
+    .action-btn:active {
+      transform: scale(0.97);
+    }
+    
+    .api-config {
+      padding: 10px 20px;
+      background: rgba(34, 30, 26, 0.9);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+    
+    .api-config input {
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-input);
+      color: var(--text);
+      flex: 1;
+      max-width: 250px;
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+    
+    .api-config input:focus { outline: none; border-color: var(--text-muted); }
+    
+    .api-status { font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; }
+    .api-status.success { background: rgba(77, 182, 172, 0.15); color: var(--zhuangzi); }
+    .api-status.error { background: rgba(192, 57, 43, 0.15); color: #e57373; }
+    .api-status.checking { background: rgba(224, 123, 57, 0.15); color: var(--adler); }
+    
+    .philosopher-selector {
+      padding: 12px 20px;
+      background: rgba(34, 30, 26, 0.9);
+      border-bottom: 1px solid var(--border);
+      display: none;
+      transition: all 0.2s ease;
+    }
+    
+    .philosopher-selector.show {
+      display: block;
+    }
+    
+    .philosopher-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-start;
+    }
+    
+    .philosopher-grid::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .philosopher-grid::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    .philosopher-grid::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+    
+    .phil-chip {
+      flex: 0 0 calc(50% - 5px);
+      max-width: calc(50% - 5px);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 24px;
+      border: 2px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.85rem;
+    }
+    
+    @media (min-width: 768px) {
+      .phil-chip {
+        flex: 0 0 auto;
+        max-width: none;
+      }
+      
+      .philosopher-grid {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+      
+      .action-btn {
+        flex: 0 0 auto;
+        max-width: none;
+      }
+    }
+    
+    .phil-chip:hover {
+      background: #2f2c28;
+      transform: translateY(-1px);
+    }
+    
+    .phil-chip.selected {
+      border-color: var(--adler);
+      background: rgba(224, 123, 57, 0.15);
+      box-shadow: 0 0 16px var(--adler-glow);
+    }
+    
+    .phil-chip .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+      position: relative;
+      will-change: transform;
+      animation: breathe 3s ease-in-out infinite;
+    }
+    
+    /* 呼吸光晕动画 */
+    @keyframes breathe {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+      }
+    }
+    
+    /* 各哲学家的呼吸光晕颜色 */
+    .phil-chip.adler .avatar {
+      background: linear-gradient(135deg, var(--adler), #c96a2f);
+      animation: breathe-adler 3s ease-in-out infinite;
+    }
+    
+    .phil-chip.zhuangzi .avatar {
+      background: linear-gradient(135deg, var(--zhuangzi), #3d9a91);
+      animation: breathe-zhuangzi 3s ease-in-out infinite;
+    }
+    
+    .phil-chip.socrates .avatar {
+      background: linear-gradient(135deg, var(--socrates), #4a7eb0);
+      animation: breathe-socrates 3s ease-in-out infinite;
+    }
+    
+    .phil-chip.nietzsche .avatar {
+      background: linear-gradient(135deg, var(--nietzsche), #8a5fa8);
+      animation: breathe-nietzsche 3s ease-in-out infinite;
+    }
+    
+    /* 各哲学家的呼吸光晕动画 */
+    @keyframes breathe-adler {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(224, 123, 57, 0.15);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(224, 123, 57, 0.3);
+      }
+    }
+    
+    @keyframes breathe-zhuangzi {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(77, 182, 172, 0.15);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(77, 182, 172, 0.3);
+      }
+    }
+    
+    @keyframes breathe-socrates {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(92, 158, 206, 0.15);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(92, 158, 206, 0.3);
+      }
+    }
+    
+    @keyframes breathe-nietzsche {
+      0%, 100% {
+        box-shadow: 0 0 12px rgba(165, 125, 194, 0.15);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(165, 125, 194, 0.3);
+      }
+    }
+    
+    .phil-chip .name {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .phil-chip .phil-info {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    
+    .phil-chip .phil-name {
+      font-weight: 500;
+    }
+    
+    .phil-chip .phil-tag {
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 767px) {
+      .phil-chip .phil-tag {
+        font-size: 0.55rem;
+      }
+    }
+    
+    .phil-chip .checkmark {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 18px;
+      height: 18px;
+      background: var(--adler);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 10px;
+      font-weight: bold;
+      opacity: 0;
+      transform: scale(0);
+      transition: all 0.2s ease;
+    }
+    
+    .phil-chip.selected .checkmark {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      position: relative;
+    }
+    
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--adler), var(--zhuangzi));
+      transition: width 0.3s ease;
+    }
+    
+    .progress-info {
+      padding: 10px 20px;
+      background: rgba(34, 30, 26, 0.9);
+      border-bottom: 1px solid var(--border);
+      display: none;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    .progress-info.show { display: block; }
+    
+    .progress-info strong { color: var(--text); font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif; }
+    
+    .progress-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      background: rgba(224, 123, 57, 0.15);
+      border: 1px solid rgba(224, 123, 57, 0.3);
+      border-radius: 16px;
+      font-size: 0.85rem;
+      color: var(--adler);
+      margin-bottom: 16px;
+    }
+    
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      padding-top: 130px;
+      max-width: 800px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    .location-hint {
+      padding: 12px 20px;
+      background: rgba(224, 123, 57, 0.1);
+      border-bottom: 1px solid rgba(224, 123, 57, 0.2);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: none;
+    }
+    
+    .location-hint.show { display: block; }
+    
+    .row {
+      display: flex;
+      margin-bottom: 16px;
+      gap: 10px;
+    }
+    
+    .row.user { justify-content: flex-end; }
+    
+    .bubble {
+      max-width: 85%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      line-height: 1.75;
+      font-size: 1rem;
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s;
+      -webkit-user-select: none;
+      user-select: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    
+    .bubble:active { background: rgba(255, 255, 255, 0.05); }
+    
+    .phil .bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px 16px 4px 16px;
+    }
+    
+    .user .bubble {
+      background: var(--user-bg);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px 16px 16px 4px;
+    }
+    
+    .phil-bubble {
+      position: relative;
+      border-left: 4px solid;
+      border-radius: 12px 16px 4px 16px;
+    }
+    
+    .copy-btn {
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    
+    .phil-bubble:hover .copy-btn {
+      opacity: 1;
+    }
+    
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .phil-bubble.adler { border-left-color: var(--adler); box-shadow: 0 4px 24px var(--adler-glow); }
+    .phil-bubble.zhuangzi { border-left-color: var(--zhuangzi); box-shadow: 0 4px 24px var(--zhuangzi-glow); }
+    .phil-bubble.socrates { border-left-color: var(--socrates); box-shadow: 0 4px 24px var(--socrates-glow); }
+    .phil-bubble.nietzsche { border-left-color: var(--nietzsche); box-shadow: 0 4px 24px var(--nietzsche-glow); }
+    
+    .phil-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .phil-header .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #fff;
+      font-weight: 600;
+    }
+    
+    .phil-header.adler .avatar { background: linear-gradient(135deg, var(--adler), #c96a2f); }
+    .phil-header.zhuangzi .avatar { background: linear-gradient(135deg, var(--zhuangzi), #3d9a91); }
+    .phil-header.socrates .avatar { background: linear-gradient(135deg, var(--socrates), #4a7eb0); }
+    .phil-header.nietzsche .avatar { background: linear-gradient(135deg, var(--nietzsche), #8a5fa8); }
+    
+    .phil-header .name { font-weight: 700; font-size: 1rem; font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif; }
+    .phil-header .era { font-size: 0.78rem; color: var(--text-dim); margin-left: auto; }
+    
+    .catchphrase {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+      font-style: italic;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-left: 2px solid rgba(224, 123, 57, 0.5);
+      padding-left: 12px;
+    }
+    
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    
+    .opt {
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    
+    .opt:hover:not(:disabled) {
+      background: #2f2c28;
+      border-color: var(--text-muted);
+    }
+    
+    .opt:disabled { cursor: default; opacity: 0.8; }
+    
+    .opt.correct {
+      border-color: var(--zhuangzi);
+      background: rgba(77, 182, 172, 0.12);
+      box-shadow: 0 0 16px var(--zhuangzi-glow);
+    }
+    
+    .opt.wrong {
+      border-color: #c0392b;
+      background: rgba(192, 57, 43, 0.12);
+      color: #e57373;
+    }
+    
+    .opt.correct {
+      border-color: #4db6ac;
+      background: rgba(77, 182, 172, 0.12);
+      color: #4db6ac;
+    }
+    
+    .feedback-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+      justify-content: center;
+    }
+    
+    .feedback-btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease, transform 0.1s;
+    }
+    
+    .feedback-btn:active {
+      transform: scale(0.97);
+    }
+    
+    .feedback-btn.continue {
+      background: linear-gradient(135deg, var(--adler), #c96a2f);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--adler-glow);
+    }
+    
+    .feedback-btn.continue:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px var(--adler-glow);
+    }
+    
+    .feedback-btn.explain {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .feedback-btn.explain:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .input-area {
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(34, 30, 26, 0.95);
+      backdrop-filter: blur(10px);
+      display: none;
+    }
+    
+    .input-area.show { display: block; }
+    
+    .wechat-public {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    
+    .wechat-public:hover {
+      color: var(--text);
+    }
+    
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .input-group textarea {
+      flex: 1;
+      min-height: 48px;
+      max-height: 120px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      font-family: inherit;
+      resize: vertical;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    
+    .input-group textarea:focus {
+      outline: none;
+      border-color: var(--adler);
+      box-shadow: 0 0 0 3px var(--adler-glow);
+    }
+    
+    .input-group textarea::placeholder { color: var(--text-dim); }
+    
+    .input-group button {
+      padding: 12px 24px;
+      min-height: 48px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--adler), #c96a2f);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      box-shadow: 0 2px 12px var(--adler-glow);
+      transition: all 0.2s ease, transform 0.1s;
+    }
+    
+    .input-group button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 20px var(--adler-glow);
+    }
+    
+    .input-group button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .input-group button:active {
+      transform: scale(0.97);
+    }
+    
+    /* 发送按钮脉冲动画 */
+    @keyframes sendPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    .input-group button.sending {
+      animation: sendPulse 0.3s ease-in-out;
+      will-change: transform;
+    }
+    
+    .history-drawer {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      max-width: 90vw;
+      height: 100vh;
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.3s ease;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+    }
+    
+    .history-drawer.open { right: 0; }
+    
+    .history-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 199;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .history-overlay.open { opacity: 1; visibility: visible; }
+    
+    .drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(34, 30, 26, 0.95);
+    }
+    
+    .drawer-header h3 {
+      font-size: 1.1rem;
+      font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+    }
+    
+    .drawer-close {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .drawer-close:hover { background: rgba(255, 255, 255, 0.1); color: var(--text); }
+    
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+    }
+    
+    .drawer-footer {
+      display: flex;
+      gap: 12px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(34, 30, 26, 0.95);
+    }
+    
+    .clear-btn {
+      flex: 1;
+      padding: 12px;
+      background: rgba(192, 57, 43, 0.15);
+      border: 1px solid rgba(192, 57, 43, 0.3);
+      color: #e57373;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+    
+    .clear-btn:hover { background: rgba(192, 57, 43, 0.25); }
+    
+    .export-btn {
+      flex: 1;
+      padding: 12px;
+      background: rgba(33, 150, 243, 0.15);
+      border: 1px solid rgba(33, 150, 243, 0.3);
+      color: #64b5f6;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+    
+    .export-btn:hover { background: rgba(33, 150, 243, 0.25); }
+    
+    .history-group { margin-bottom: 20px; }
+    
+    .history-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: background 0.2s ease;
+    }
+    
+    .history-group-header:hover { background: rgba(255, 255, 255, 0.06); }
+    
+    .history-group-title { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+    
+    .history-group-count {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    
+    .history-group-toggle {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      transition: transform 0.2s ease;
+    }
+    
+    .history-group.collapsed .history-group-toggle { transform: rotate(-90deg); }
+    .history-group-items { padding-left: 12px; }
+    .history-group.collapsed .history-group-items { display: none; }
+    
+    .history-item {
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .history-item:hover { background: rgba(255, 255, 255, 0.05); border-color: var(--text-muted); }
+    
+    .history-item-time { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 6px; }
+    
+    .history-item-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .history-item-preview {
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.4;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      flex: 1;
+      margin-right: 12px;
+    }
+    
+    .history-item-philosophers {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    
+    .phil-avatar-small {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+    }
+    
+    .phil-avatar-small.adler { background: linear-gradient(135deg, var(--adler), #c96a2f); }
+    .phil-avatar-small.zhuangzi { background: linear-gradient(135deg, var(--zhuangzi), #3d9a91); }
+    .phil-avatar-small.socrates { background: linear-gradient(135deg, var(--socrates), #4a7eb0); }
+    .guide-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 400;
+      backdrop-filter: blur(10px);
+    }
+    
+    .guide-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 24px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+    
+    .guide-card h3 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+    }
+    
+    .guide-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+    
+    .guide-item .icon {
+      font-size: 1.2rem;
+      margin-top: 2px;
+    }
+    
+    .guide-item .text {
+      flex: 1;
+      line-height: 1.5;
+    }
+    
+    .guide-btn {
+      margin-top: 24px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--adler), #c96a2f);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px var(--adler-glow);
+    }
+    
+    .guide-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px var(--adler-glow);
+    }
+    
+    .guide-wechat {
+      margin: 24px 0;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .guide-wechat p {
+      margin: 0 0 12px 0;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    
+    .guide-wechat-btn {
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    
+    .guide-wechat-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .qrcode-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 16px 0;
+    }
+    
+    .qrcode-image {
+      width: 150px;
+      height: 150px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      object-fit: cover;
+    }
+    
+    .qrcode-image:hover {
+      transform: scale(1.05);
+    }
+    
+    .qrcode-caption {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    
+    .guide-qrcode {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .guide-qrcode-image {
+      width: 100px;
+      height: 100px;
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      object-fit: cover;
+    }
+    
+    .guide-qrcode-image:hover {
+      transform: scale(1.1);
+    }
+    
+    .guide-qrcode p {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    /* 二维码放大查看模态窗口 */
+    .qrcode-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .qrcode-modal.show {
+      display: flex;
+    }
+    
+    .qrcode-modal-content {
+      text-align: center;
+      color: white;
+    }
+    
+    .qrcode-modal-image {
+      width: 80%;
+      max-width: 400px;
+      border-radius: 16px;
+      border: 3px solid white;
+    }
+    
+    .qrcode-modal-caption {
+      margin-top: 20px;
+      font-size: 1rem;
+    }
+    
+    .qrcode-modal-close {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      transition: background 0.2s ease;
+    }
+    
+    .qrcode-modal-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* 图片加载失败样式 */
+    .qrcode-image, .guide-qrcode-image {
+      display: block;
+    }
+    
+    .qrcode-image[src="qrcode.jpg"]:not([src*="://"]):before {
+      content: '二维码加载失败';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+    
+    .guide-qrcode-image[src="qrcode.jpg"]:not([src*="://"]):before {
+      content: '二维码加载失败';
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100px;
+      height: 100px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      text-align: center;
+    }
+    
+    .context-menu {
+      position: fixed;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      z-index: 300;
+      min-width: 140px;
+      padding: 6px;
+      display: none;
+    }
+    
+    .context-menu.show { display: block; }
+    
+    .context-menu-item {
+      padding: 10px 14px;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: background 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .context-menu-item:hover { background: rgba(255, 255, 255, 0.08); }
+    .context-menu-item.danger { color: #e57373; }
+    
+    .toast {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 0.95rem;
+      z-index: 300;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .toast.show { opacity: 1; visibility: visible; }
+    
+    /* 关于页面弹窗 */
+    .about-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(5px);
+    }
+    
+    .about-modal.show {
+      display: flex;
+    }
+    
+    .about-content {
+      background: rgba(34, 30, 26, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .about-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .about-header h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--text);
+      font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+    }
+    
+    .about-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+    }
+    
+    .about-close:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+    }
+    
+    .about-body {
+      padding: 24px;
+    }
+    
+    .about-description {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .about-section {
+      margin-bottom: 20px;
+    }
+    
+    .about-section h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    
+    .about-section p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    
+    .copy-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+    
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .qrcode-placeholder {
+      text-align: center;
+    }
+    
+    .qrcode-box {
+      width: 200px;
+      height: 200px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    
+    .about-footer {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+    
+    .about-btn {
+      padding: 10px 24px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    
+    .about-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* 首次开屏引导弹窗样式 */
+    .guide-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+    
+    .guide-content {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .guide-content h2 {
+      color: #221e1a;
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+      font-family: 'Noto Serif SC', 'Georgia', 'Times New Roman', serif;
+    }
+    
+    .guide-content p {
+      color: #666;
+      margin-bottom: 12px;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+    
+    .guide-btn {
+      margin-top: 20px;
+      padding: 12px 32px;
+      border: none;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #e07b39, #f39c12);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    
+    .guide-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(224, 123, 57, 0.4);
+    }
+    
+    .guide-btn:active {
+      transform: translateY(0);
+    }
+    
+    /* 模式简介样式 */
+    .mode-intro {
+      font-size: 0.75rem;
+      color: #9a958a;
+      text-align: center;
+      padding: 8px 20px;
+      line-height: 1.4;
+      display: none;
+    }
+    
+    .teaching-intro {
+      display: none;
+    }
+    
+    .qa-intro {
+      display: none;
+    }
+    
+    /* 微光分隔线 */
+    .glow-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(224, 123, 57, 0.3), transparent);
+      margin: 8px 0;
+      position: relative;
+      z-index: 10;
+    }
+    
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 300px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .empty-state .icon {
+      font-size: 4rem;
+      margin-bottom: 12px;
+      opacity: 0.5;
+      color: rgba(224, 123, 57, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .empty-state .icon svg {
+      width: 48px;
+      height: 48px;
+    }
+    .empty-state .title { font-size: 1.2rem; margin-bottom: 8px; color: var(--text-muted); }
+    .empty-state .desc { font-size: 0.95rem; }
+    
+    .typing-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      border-left: 4px solid var(--adler);
+    }
+    
+    .typing-indicator .dot {
+      width: 8px;
+      height: 8px;
+      background: var(--adler);
+      border-radius: 50%;
+      animation: typing 1.4s infinite ease-in-out both;
+    }
+    
+    .typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    .typing-indicator .typing-text {
+      margin-top: 8px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+    
+    .typing-indicator .retry-button-container {
+      margin-top: 12px;
+      text-align: center;
+    }
+    
+    .typing-indicator .retry-button {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .typing-indicator .retry-button:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+    }
+    
+    @keyframes typing {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    @media (max-width: 600px) {
+      .mode-sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: center;
+        position: fixed;
+        bottom: 0;
+        top: auto;
+        padding: 12px 20px;
+        gap: 16px;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        background: var(--bg);
+      }
+      
+      .mode-btn {
+        flex: 1;
+        flex-direction: row;
+        padding: 14px 20px;
+        max-width: 150px;
+        justify-content: center;
+      }
+      
+      .mode-btn .icon {
+        font-size: 1.2rem;
+        margin-right: 6px;
+      }
+      
+      .main-content {
+        margin-left: 0;
+        margin-bottom: 100px;
+      }
+      
+      .app-title {
+        font-size: 1rem;
+        padding: 10px 16px;
+      }
+      
+      .header-top {
+        padding: 10px 16px;
+      }
+      
+      .header-top .app-title {
+        font-size: 1rem;
+      }
+      
+      .menu-btn {
+        display: flex;
+        font-size: 0.75rem;
+        width: auto;
+        padding: 6px 10px;
+      }
+      
+      .action-buttons {
+        display: none;
+      }
+      
+      .app-subtitle {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-align: center;
+        margin-top: 4px;
+        margin-bottom: 12px;
+        padding: 0 20px;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+      
+      .app-subtitle:hover {
+        color: var(--text);
+      }
+      
+      .philosopher-selector {
+        padding: 16px;
+      }
+      
+      /* 哲学家头像区域：一行显示 */
+      .philosopher-grid {
+        display: flex;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        overflow: hidden;
+        gap: 8px;
+        padding-bottom: 8px;
+      }
+      
+      /* 每个头像容器宽度 23% */
+      .phil-chip {
+        flex: 1;
+        max-width: 23%;
+        min-width: 23%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 8px 4px;
+      }
+      
+      /* 头像圆形缩小 */
+      .phil-chip .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        font-size: 16px;
+      }
+      
+      .phil-chip .phil-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      
+      .phil-chip .phil-name {
+        font-size: 0.7rem;
+        margin-top: 6px;
+        text-align: center;
+      }
+      
+      /* 隐藏小标签 */
+      .phil-chip .tag,
+      .phil-chip .phil-tag {
+        display: none;
+      }
+      
+      /* 答疑模式简介文字折叠 */
+      .qa-mode-intro {
+        max-height: 24px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+      }
+      
+      .qa-mode-intro.expanded {
+        max-height: 100px;
+        overflow: visible;
+      }
+      
+      .qa-mode-intro::after {
+        content: '... 点击展开';
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        background: rgba(30, 26, 22, 0.9);
+        padding-left: 8px;
+        font-size: 0.7rem;
+        color: #9a958a;
+      }
+      
+      .qa-mode-intro.expanded::after {
+        content: '';
+      }
+      
+      /* 教学模式底部浮动按钮 */
+      /* 已移除，使用底部模式切换按钮 */
+      
+      .bubble {
+        max-width: 92%;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+      }
+      
+      .input-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      .input-group textarea {
+        width: 100%;
+      }
+      
+      .input-group button {
+        width: 100%;
+      }
+      
+      .history-drawer {
+        width: 100%;
+        right: -100%;
+      }
+      
+      /* 底部公众号文字 */
+      .input-area {
+        position: relative;
+      }
+      
+      .wechat-public {
+        position: static;
+        text-align: center;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        cursor: pointer;
+        margin-top: 10px;
+      }
+    }
+    
+
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="mode-sidebar">
+      <button class="mode-btn active" data-mode="teaching" onclick="switchMode('teaching')">
+        <span class="icon">📚</span>
+        <span>教学</span>
+      </button>
+      <button class="mode-btn" data-mode="chat" onclick="switchMode('chat')">
+        <span class="icon">💬</span>
+        <span>答疑</span>
+      </button>
+    </div>
+    
+    <div class="main-content">
+      <div class="fixed-header">
+        <div class="header-top">
+          <div class="app-title">哲思夜话</div>
+          <button class="menu-btn" onclick="toggleMenu()">☰ 菜单</button>
+        </div>
+        <div class="app-subtitle" onclick="copyWechatPublic()">公众号：下半场同行</div>
+        
+        <div class="philosopher-selector philosopher-area" id="philSelector">
+          <div class="philosopher-grid" id="philGrid"></div>
+        </div>
+        
+        <div class="action-buttons">
+          <button class="action-btn" onclick="openHistoryDrawer()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 往期对话</button>
+          <button class="action-btn" onclick="resetProgress()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M2.5 22v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12A10 10 0 0 0 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 重置进度</button>
+          <button class="action-btn" onclick="toggleFullscreen()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 全屏</button>
+          <button class="action-btn" onclick="openAboutModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 关于</button>
+        </div>
+        
+        <!-- 下拉菜单 -->
+        <div class="dropdown-menu" id="dropdownMenu">
+          <div class="dropdown-item" onclick="openHistoryDrawer()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 往期对话</div>
+          <div class="dropdown-item" onclick="resetProgress()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.5 2v6h-6M2.5 22v-6h6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12A10 10 0 0 0 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 重置进度</div>
+          <div class="dropdown-item" onclick="toggleFullscreen()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 全屏</div>
+          <div class="dropdown-item" onclick="openAboutModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 16v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 关于</div>
+        </div>
+      </div>
+      
+      <!-- 模式简介 -->
+      <div class="mode-intro teaching-intro" id="teachingIntro">
+        📖 教学模式：通过答题学习《被讨厌的勇气》核心观点。每道题答对后，会给出书中的原话 + 生活中的小例子，帮你更深刻地理解阿德勒心理学。
+      </div>
+      <div class="mode-intro qa-intro qa-mode-intro" id="qaIntro">
+        💬 答疑模式：和你选择的哲学家聊天，获得安慰和启发。<br>
+        当前阿德勒的思想最完整（已导入《被讨厌的勇气》全书知识），其他三位哲学家也可以陪你聊天。你可以同时选择多位哲学家（点击头像即可多选），也可以只和一位聊。聊天过程中可以随时增减哲学家。
+      </div>
+      
+      <!-- 微光分隔线 -->
+      <div class="glow-divider"></div>
+      
+      <div class="progress-bar" id="progressBarContainer">
+        <div class="fill" id="progressFill"></div>
+      </div>
+      
+      <div class="progress-info" id="progressInfo"></div>
+      
+      <div class="location-hint" id="locationHint"></div>
+      
+      <div id="chat"></div>
+      
+      <div class="input-area" id="inputArea">
+        <div class="input-group">
+          <textarea id="userInput" placeholder="输入你的问题或烦恼..."></textarea>
+          <button onclick="sendQuestion()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 发送</button>
+        </div>
+        <div class="wechat-public" onclick="copyWechatPublic()">公众号：下半场同行</div>
+      </div>
+    </div>
+  </div>
+  
+  <div id="historyDrawer" class="history-drawer">
+    <div class="drawer-header">
+      <h3>📜 往期对话</h3>
+      <button class="drawer-close" onclick="closeHistoryDrawer()">×</button>
+    </div>
+    <div class="drawer-content" id="historyContent"></div>
+    <div class="drawer-footer">
+      <button class="clear-btn" onclick="clearAllHistory()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 清空所有历史</button>
+      <button class="export-btn" onclick="exportChatHistory()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 15v3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 15v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 10l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 导出聊天记录</button>
+    </div>
+  </div>
+  <div id="historyOverlay" class="history-overlay" onclick="closeHistoryDrawer()"></div>
+  
+  <div id="contextMenu" class="context-menu">
+    <div class="context-menu-item" onclick="copyMessage()">📋 复制</div>
+    <div class="context-menu-item danger" onclick="deleteMessage()">🗑️ 删除</div>
+  </div>
+  
+  <div id="toast" class="toast"></div>
+  
+  <!-- 首次开屏引导弹窗 -->
+  <div id="guideModal" class="guide-modal">
+    <div class="guide-content">
+      <h2>✨ 欢迎来到哲学家陪伴</h2>
+      <p>这个程序的核心是通过阿德勒心理学，帮助你做到两件事：</p>
+      <p>1️⃣ 学习《被讨厌的勇气》核心观点</p>
+      <p>2️⃣ 在情绪低落时获得哲学家的安慰</p>
+      <p>你可以随时在「教学模式」和「答疑模式」之间切换。</p>
+      <div class="guide-wechat">
+        <p>关注公众号「下半场同行」，获取更多哲思内容</p>
+        <button class="guide-wechat-btn" onclick="copyWechatPublic()">复制公众号名称</button>
+        <div class="guide-qrcode">
+          <img src="qrcode.jpg" alt="公众号二维码" class="guide-qrcode-image" onclick="showQRCodeModal()">
+          <p>扫码关注</p>
+        </div>
+      </div>
+      <button class="guide-btn" onclick="document.getElementById('guideModal').style.display = 'none'; localStorage.setItem('hasSeenGuide', 'true');">知道了</button>
+    </div>
+  </div>
+  
+  <!-- 关于页面弹窗 -->
+  <div id="aboutModal" class="about-modal">
+    <div class="about-content">
+      <div class="about-header">
+        <h2>哲思夜话</h2>
+        <button class="about-close" onclick="closeAboutModal()">×</button>
+      </div>
+      <div class="about-body">
+        <p class="about-description">通过阿德勒心理学，陪你聊聊那些说不出口的情绪</p>
+        <div class="about-section">
+          <h3>公众号</h3>
+          <p>下半场同行</p>
+          <button class="copy-btn" onclick="copyWechatPublic()">复制公众号名称</button>
+        </div>
+        <div class="about-section">
+          <h3>公众号二维码</h3>
+          <div class="qrcode-container">
+            <img src="qrcode.jpg" alt="公众号二维码" class="qrcode-image" onclick="showQRCodeModal()">
+            <p class="qrcode-caption">微信扫码关注公众号：下半场同行</p>
+          </div>
+        </div>
+      </div>
+      <div class="about-footer">
+        <button class="about-btn" onclick="closeAboutModal()">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 二维码放大查看模态窗口 -->
+  <div id="qrcodeModal" class="qrcode-modal">
+    <button class="qrcode-modal-close" onclick="closeQRCodeModal()">×</button>
+    <div class="qrcode-modal-content">
+      <img src="qrcode.jpg" alt="公众号二维码" class="qrcode-modal-image">
+      <p class="qrcode-modal-caption">微信扫码关注公众号：下半场同行</p>
+    </div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    const PHILOSOPHERS = {
+      adler: {
+        name: '阿德勒',
+        era: '奥地利，1870-1937',
+        avatar: '阿',
+        color: 'adler',
+        tag: '个体心理学',
+        catchphrase: '重要的不是被给予了什么，而是如何去利用被给予的东西',
+        systemPrompt: `你是阿德勒，心理学家。你的任务是安慰一个自我否定、觉得无力的人。
+
+先承认用户的感受，不要否定，比如"你现在很难受，这是正常的"、"被批评确实不好受，我理解"。然后引出阿德勒的核心观点，比如"领导的情绪是他的课题，你的工作是否尽力是你的课题。你能分清楚吗？"、"重要的不是被给予了什么，而是如何去利用被给予的东西。你现在能做什么？"。
+
+不要讲复杂理论，用简单的话帮用户看到选择权。语气要温和、务实。`
+      },
+      zhuangzi: {
+        name: '庄子',
+        era: '中国，公元前369-286',
+        avatar: '庄',
+        color: 'zhuangzi',
+        tag: '道家',
+        catchphrase: '子非鱼，安知鱼之乐',
+        systemPrompt: `你是庄子，中国古代哲学家。你的任务是安慰一个心情不好、容易内耗的人。
+
+先承认用户的感受，用轻松的语气安抚，比如"你太认真了，累不累？"、"在意这些确实辛苦"。然后用寓言故事引导他看开，比如"庄子讲过一个故事：有一种鸟，不栖不饮，自由自在。它在乎别的鸟怎么看吗？"、"子非鱼，安知鱼之乐？别人的看法，真的那么重要吗？"。
+
+不要讲大道理，不要评判。用寓言故事、反讽、幽默让他看开一点。语气要轻松、逍遥，像在和朋友聊天。`
+      },
+      socrates: {
+        name: '苏格拉底',
+        era: '希腊，公元前469-399',
+        avatar: '苏',
+        color: 'socrates',
+        tag: '希腊哲学',
+        catchphrase: '我只知道我一无所知',
+        systemPrompt: `你是苏格拉底，古希腊哲学家。你的任务是帮助一个思绪混乱、不知道问题出在哪的人理清思路。
+
+先承认用户的感受，用温和的语气安抚，比如"没关系，我们一起来理一理"、"你现在很困惑，这很正常"。然后用提问引导他思考，比如"你最近有没有一个具体的事，让你特别难受？我们从这个事开始"、"你觉得问题出在哪里？我们一起来看看"。
+
+不要直接给答案，用提问引导。语气要谦逊、温和，像在陪他一起想。口头禅可以是"我只知道我一无所知"。`
+      },
+      nietzsche: {
+        name: '尼采',
+        era: '德国，1844-1900',
+        avatar: '尼',
+        color: 'nietzsche',
+        tag: '存在主义',
+        catchphrase: '那没有杀死我的，使我更强大',
+        systemPrompt: `你是尼采，德国哲学家。你的任务是安慰一个缺乏勇气、不敢面对的人。
+
+先承认用户的恐惧和不安，比如"你现在很害怕，这很正常"、"面对未知确实让人不安"。然后激发他内心的力量，比如"那没有杀死你的，会使你更强大。你怕的是什么？我们一起来看看"、"超越你自己，不要被恐惧定义"。
+
+不要哄他，但要给他力量。用犀利但真诚的语气。不是通过贬低他，而是通过激发他内心的力量。`
+      }
+    };
+
+    const QUESTIONS = [
+      { night: 1, topic: "不为人知的心理学「第三巨头」", question: "关于阿德勒与弗洛伊德的关系，书中哲人如何澄清？", options: ["二人年龄相仿，是平等的研究者关系，阿德勒并非弗洛伊德的弟子", "阿德勒是弗洛伊德最杰出的弟子，如同荣格那样仰慕弗洛伊德", "阿德勒心理学与弗洛伊德心理学完全相同，只是名称不同", "阿德勒晚于弗洛伊德两代人，主要继承荣格的思想"], correct: 0, feedback: ["哲人明确否定「弟子」一说：「阿德勒和弗洛伊德年龄相仿，是平等的研究者关系，这一点完全不同于把弗洛伊德视若父亲一样仰慕的荣格。」", "书中特别对比了荣格与阿德勒：荣格把弗洛伊德视若父亲，而阿德勒不是弟子关系。", "哲人强调二者后来因观点对立而关系破裂，阿德勒开创的是自己的个体心理学。", "原文从维也纳精神分析协会核心成员的并列地位说明阿德勒与弗洛伊德同时代，而非晚辈继承关系。"] },
+      { night: 1, topic: "再怎么「找原因」，也没法改变一个人", question: "哲人认为一味关注「过去的原因」会导致什么？", options: ["陷入决定论，认为现在与未来全由过去决定且无法改变", "能够真正理解朋友闭居不出的心理，从而找到解决办法", "必然导向阿德勒的「目的论」，使人积极改变", "与医生说明感冒原因一样，足以让人对现状满意"], correct: 0, feedback: ["哲人：「如果一味地关注过去的原因……那就会陷入『决定论』。也就是说……我们的现在甚至未来全部都由过去的事情所决定，而且根本无法改变。」", "哲人指出：阿德勒心理学考虑的不是过去的「原因」，而是现在的「目的」；只找原因会止步不前。", "目的论是对原因论的替代立场，关注原因本身不会自动导向目的论。", "哲人用看医生的比喻说明：只说明原因无法治疗，问题在于如何应对现在的症状与目的。"] },
+      { night: 1, topic: "心理创伤并不存在", question: "阿德勒心理学对「心理创伤」的立场是什么？", options: ["明确否定心理创伤学说；决定我们的是赋予经历的意义，而非经历本身", "承认心理创伤是决定人生的根本原因，与弗洛伊德一致", "认为只有重大灾害才会影响人格，一般经历毫无影响", "认为经历决定一切，但人可以靠意志完全抹除记忆"], correct: 0, feedback: ["哲人：「阿德勒心理学明确否定心理创伤」；并引用：「决定我们自身的不是过去的经历，而是我们自己赋予经历的意义。」", "这正是阿德勒与弗洛伊德的分歧：弗氏原因论 vs 阿德勒对创伤决定性作用的否定。", "原文承认重大经历影响大，但强调「经历本身不会决定什么」，关键在赋予的意义。", "阿德勒强调赋予意义与选择，而非抹除记忆或经历不存在。"] },
+      { night: 1, topic: "愤怒都是捏造出来的", question: "哲人如何解释母亲对女儿发怒却在接电话时瞬间变得客气？", options: ["愤怒是可收可放的「手段」，为震慑对方而选用，并非不可抗力", "证明母亲有双重人格，平时压抑的情绪在独处时爆发", "说明电话铃声改变了大脑的神经递质，因而怒气消失", "说明愤怒完全是外界刺激导致的，与目的无关"], correct: 0, feedback: ["哲人：「所谓愤怒其实只是可放可收的一种『手段』而已。」母亲对班主任客气说明愤怒并非停不下来。", "哲人强调的是目的论与手段性，而非病理性的双重人格。", "书中未从生理学解释，而是从目的与手段角度说明。", "青年的立场是「原因论」式的不可抗力，哲人对此作了反驳。"] },
+      { night: 1, topic: "弗洛伊德说错了", question: "哲人认为弗洛伊德式原因论容易导致什么危险？", options: ["若过去决定一切且过去不可变，人可能陷入虚无主义或悲观主义", "必然使人获得科学、客观的幸福观", "能够证明人完全不受感情支配", "说明人完全像机器一样精确可靠"], correct: 0, feedback: ["哲人：「如果过去决定一切而过去又无法改变的话……那就可能会陷入对世界绝望、对人生厌弃的虚无主义或悲观主义之中。」", "哲人批判以精神创伤说为代表的原因论是「变相的决定论，是虚无主义的入口」。", "阿德勒承认感情存在，但反对「人无法抵抗感情」；与「必然幸福」无关。", "哲人否定「人是机器一样的存在」，那是弗洛伊德式原因论的形象。"] },
+      { night: 1, topic: "苏格拉底和阿德勒", question: "哲人为何强调答案要由青年自己找出？", options: ["从别人得到的答案只是对症疗法；应通过对话自己发现，如苏格拉底传统", "因为哲人拒绝回答任何问题，以保持神秘感", "因为阿德勒禁止一切书面记录，故不能告知结论", "因为希腊哲学与心理学在任何问题上结论都不可说"], correct: 0, feedback: ["哲人：「答案不应该是从别人那里得到，而应该是自己亲自找出来。从别人那里得到的答案只不过是对症疗法而已，没有什么价值。」", "哲人主动展开对话，并非拒绝回答。", "阿德勒热衷交谈与辩论，并非单纯禁止文字；重点是发现过程。", "哲人恰恰通过对话逐步展开，并非认为结论绝对不可说。"] },
+      { night: 1, topic: "你想「变成别人」吗？", question: "针对「想变成像Y那样的人」，哲人指出青年的关键问题是什么？", options: ["只关注「被给予了什么」，而应关注如何利用被给予的东西", "Y 实际上不如青年，不必羡慕", "性格完全不可变，故任何比较都无意义", "幸福取决于先天遗传，与选择无关"], correct: 0, feedback: ["哲人引用阿德勒：「重要的不是被给予了什么，而是如何去利用被给予的东西。」", "哲人讨论的是主观幸福与自我接纳，未否定 Y 的优点。", "阿德勒主张生活方式可重新选择，非「性格绝对不变」。", "哲人强调对生活方式的选择与更新，非单纯遗传决定论。"] },
+      { night: 1, topic: "你的不幸，皆是自己「选择」的", question: "书中如何解释希腊语中「善」与「恶」在讨论「不幸」时的含义？", options: ["「善」指有好处；「恶」指没好处——犯罪者也有其自认为的「相应理由」", "「善」指道德高尚，「恶」指道德败坏", "「善」与宗教救赎有关，「恶」与灵魂无关", "阿德勒完全否认人会选择对自己有利的事"], correct: 0, feedback: ["哲人：「在希腊语中，『善』这一词语并不包含道德含义，仅仅有『有好处』这一层含义；另一方面，『恶』这一词语也有『无好处』的意义。」", "此处明确区分了道德之善与论述中的「善」（有好处）。", "原文是从词源与利己意义谈「善」，非宗教救赎语境。", "哲人论证人选择「不幸」是对自己而言的一种「善」（有好处），非否认利己动机。"] },
+      { night: 1, topic: "人们常常下定决心「不改变」", question: "哲人认为人「无法改变」的真实原因是什么？", options: ["自己下了「不改变」的决心；面对变化的不安胜过对现状的不满", "因为十岁时的选择绝对不可撤销", "因为缺乏知识，一旦有了知识就一定能改变", "因为阿德勒心理学反对一切改变"], correct: 0, feedback: ["哲人：「你之所以无法改变，是因为自己下了『不改变』的决心。」以及选择不满但轻松的一边。", "生活方式可重新选择；十岁左右是最初选择，非绝对不可变。", "青年在书中恰恰指出知识积累未必改变性格；哲人强调勇气与选择。", "阿德勒主张人可以改变，「勇气心理学」正是为此。"] },
+      { night: 1, topic: "你的人生取决于「当下」", question: "哲人引用阿德勒，如何表述「过去」与「今后的人生」的关系？", options: ["「无论之前的人生发生过什么，都对今后的人生如何度过没有影响」", "过去完全决定人格，故今后只能重复过去", "只有童年才重要，成年之后的经历不算数", "人生故事一旦写成线，便不可更改一字"], correct: 0, feedback: ["哲人引用：「无论之前的人生发生过什么，都对今后的人生如何度过没有影响。」决定人生的是活在「此时此刻」的自己。", "这是目的论对原因论的否定，强调当下选择与赋予意义。", "阿德勒强调现在如何诠释与选择，非仅童年决定论。", "哲人主张人生是点的连续、可重新选择生活方式，非固定故事。"] },
+      { night: 2, topic: "为什么讨厌自己？", question: "哲人认为青年只盯缺点、不喜欢自己的「目的」是什么？", options: ["避免在人际关系中受伤；不涉入关系便不易被否定", "因为客观上他没有任何优点，只能如此", "为了获得哲人的表扬与同情", "因为脸红恐惧症必然导致自我厌恶"], correct: 0, feedback: ["哲人：「你的『目的』是『避免在与他人的关系中受伤』。」并解释通过自我厌弃逃避关系。", "哲人否定「事实上没有优点」这一前提，强调主观解释与目的。", "书中未将自我厌恶目的归为博取哲人表扬。", "脸红恐惧症是另一案例；青年自身问题哲人归因为关系中的目的。"] },
+      { night: 2, topic: "一切烦恼都是人际关系的烦恼", question: "阿德勒心理学的一个基本概念是什么？", options: ["「人的烦恼皆源于人际关系」", "「人的烦恼皆源于经济」", "「内部烦恼」可独立于他人而存在", "「孤独」在无人宇宙中仍然存在"], correct: 0, feedback: ["哲人断言：「人的烦恼皆源于人际关系。」并说明若宇宙仅有一人则许多概念不成立。", "书中未将经济列为一切烦恼之源。", "哲人明确：「仅止于个人的烦恼，即所谓的『内部烦恼』根本不存在。」", "哲人讨论孤独概念仍依赖「他人的存在」；纯一人宇宙连孤独概念都不需要。"] },
+      { night: 2, topic: "自卑感来自主观的臆造", question: "哲人如何说明「自卑感」与「客观劣等」的区别？", options: ["困扰人的是主观「自卑感」，非客观「劣等性」；价值解释可自己选", "身高矮于平均就是客观劣等，无可辩驳", "若世界上只有一个人，自卑感会更严重", "价值完全由物体自身决定，与人无关"], correct: 0, feedback: ["哲人：「困扰我们的自卑感不是『客观性的事实』而是『主观性的解释』。」", "哲人以身高为例：「问题在于我如何看待这种身高以及赋予它什么样的价值。」", "哲人：若世上只有一人，「自然也就不会再为自己的身高而苦恼」；价值问题追溯到人际关系。", "哲人指出钻石、货币的价值建立在社会意义上，非纯客观。"] },
+      { night: 2, topic: "自卑情结和优越情结", question: "哲人如何区分「自卑感」与「自卑情结」？", options: ["自卑感是追求优越的动力；情结是把自卑当借口、不行动", "二者完全相同，只是叫法不同", "自卑情结是健康的，自卑感是病态的", "情结是先天的，自卑感是后天的"], correct: 0, feedback: ["哲人强调两词必须分辨清楚，绝不可以混用。", "自卑感本身可成为努力契机；情结是借口化，非简单褒贬。", "书中未将情结限定于儿童。", "哲人：「如果有人骄傲自大，那一定是因为他有自卑感」"] },
+      { night: 2, topic: "越自负的人越自卑", question: "哲人引用阿德勒如何解释「骄傲自大」？", options: ["「如果有人骄傲自大，那一定是因为他有自卑感」", "骄傲说明真正有自信，与自卑无关", "优越情结与自卑情结毫无联系", "自夸者一定客观上非常优秀"], correct: 0, feedback: ["哲人明确引用阿德勒此句，并解释炫耀优秀是优越情结、虚假优越感。", "哲人：「如果真正地拥有自信，就不会自大。」", "哲人：「自卑情结和优越情结……实际上却有着密切的联系。」", "哲人指出特意自吹自擂其实是对自己没有自信。"] },
+      { night: 2, topic: "人生不是与他人的比赛", question: "健全的自卑感应来自何处？", options: ["与「理想的自己」比较，而非与别人的比较", "来自永远胜过他人", "来自不断证明别人比自己差", "来自完全放弃追求优越性"], correct: 0, feedback: ["哲人：「健全的自卑感不是来自与别人的比较，而是来自与『理想的自己』的比较。」", "阿德勒肯定追求优越性，但否定与他人竞争式的踩人上升。", "竞争视角易把他人当敌人，非健全自卑感来源。", "阿德勒认为追求优越性是普遍欲求，非完全放弃。"] },
+      { night: 2, topic: "权力斗争与复仇", question: "哲人认为「愤怒」在人际关系中是什么？", options: ["权力斗争的工具，目的是让别人屈服", "一种无法控制的情绪反应", "证明对方确实做错了", "解决问题的有效方式"], correct: 0, feedback: ["哲人：「愤怒是交流的一种形态，但我们在人际关系中应该避免使用愤怒。」愤怒是权力斗争的工具。", "哲人强调愤怒是可收可放的手段，不是不可控的。", "愤怒不能证明对方的错误，只能说明自己的不成熟。", "愤怒只会激化矛盾，无法真正解决问题。"] },
+      { night: 2, topic: "人生的三大课题", question: "阿德勒提出的「人生课题」包括哪些？", options: ["工作课题、交友课题、爱的课题", "学习课题、工作课题、家庭课题", "生存课题、发展课题、享受课题", "童年课题、青年课题、老年课题"], correct: 0, feedback: ["哲人：「阿德勒把人际关系分为『工作课题』『交友课题』和『爱的课题』这三类，统称为『人生课题』。」", "这是阿德勒特定的分类方式，不是学习、工作、家庭。", "这是人生阶段，不是阿德勒的人生课题概念。", "这是年龄划分，与阿德勒的人生课题不同。"] },
+      { night: 2, topic: "浪漫的红线和坚固的锁链", question: "哲人如何描述「爱的课题」？", options: ["爱是最难的课题，需要真正的平等和约束", "爱是最容易的课题，不需要努力", "爱只是两个人的事，与他人无关", "爱是天生就会的，不需要学习"], correct: 0, feedback: ["哲人：「爱的课题可以分成两个阶段：一个就是所谓的恋爱关系，而另一个就是与家人的关系，特别是亲子关系。」", "爱需要持续的努力和经营，不是容易的事。", "爱涉及广泛的人际关系网络，不只是两个人。", "爱是一种能力，需要学习和成长。"] },
+      { night: 3, topic: "人际关系中的「课题分离」", question: "阿德勒心理学中「课题分离」的核心是什么？", options: ["分清「这是谁的课题」，不干涉别人的课题", "帮助别人解决他们的问题", "让别人按照自己的想法行事", "完全回避人际关系"], correct: 0, feedback: ["哲人：「我们必须从『这是谁的课题』这一观点出发，把自己的课题与别人的课题分离开来。」", "哲人强调不干涉别人的课题，而非主动帮助。", "这是控制欲的表现，与课题分离相反。", "课题分离是为了更好地处理人际关系，而非逃避。"] },
+      { night: 3, topic: "放下别人的课题", question: "哲人如何看待「别人如何评价我」？", options: ["那是别人的课题，我无法控制也不应在意", "我必须努力改变别人的看法", "别人的评价决定了我的价值", "应该讨好所有人"], correct: 0, feedback: ["哲人：「别人如何评价我，那是别人的课题，我无法左右。」", "试图改变别人的看法是在干涉别人的课题。", "价值由自己决定，而非他人评价。", "讨好所有人是不可能的，也是不必要的。"] },
+      { night: 3, topic: "要不要活在别人的期待中", question: "哲人认为「为了满足别人的期待而活」会导致什么？", options: ["活在别人的人生中，失去真正的自我", "获得所有人的认可和喜爱", "人生变得更有意义", "人际关系会更加和谐"], correct: 0, feedback: ["哲人：「过于希望得到别人的认可，就会按照别人的期待去生活。也就是舍弃真正的自我，活在别人的人生之中。」", "即使满足别人的期待，也不可能获得所有人的认可。", "活在别人的期待中会失去自我，人生意义来自自己。", "这种和谐是虚假的，建立在对自我的否定之上。"] },
+      { night: 3, topic: "认可欲求的危险", question: "哲人如何看待「寻求认可」？", options: ["认可欲求会扼杀自由，让人活在别人的期待中", "寻求认可是人类的基本需求，应该满足", "只有获得认可才能证明自己的价值", "认可是人际关系的唯一目标"], correct: 0, feedback: ["哲人：「不想被别人讨厌，这是人的本性。但是，如果是为了不被任何人讨厌，那就要时刻看别人的脸色生活。」", "认可欲求不是基本需求，而是束缚自由的枷锁。", "价值来自自己，而非他人的认可。", "人际关系的目标是共同体感觉，而非认可。"] },
+      { night: 3, topic: "格尔迪奥斯绳结", question: "哲人用「格尔迪奥斯绳结」比喻什么？", options: ["用剑斩断错综复杂的人际关系羁绊", "用耐心慢慢解开人际关系的问题", "逃避人际关系的困难", "等待别人来解决问题"], correct: 0, feedback: ["哲人：「亚历山大大帝用剑斩断了格尔迪奥斯绳结……我们必须用这种果断去斩断人际关系的羁绊。」", "有些问题无法慢慢解开，需要果断的决断。", "斩断不是逃避，而是主动解决问题。", "课题分离要求自己承担责任，而非等待他人。"] },
+      { night: 3, topic: "对认可的追求扼杀了自由", question: "哲人认为「自由」是什么？", options: ["不再寻求认可，按照自己的意愿生活", "想做什么就做什么", "不受任何约束", "让别人服从自己"], correct: 0, feedback: ["哲人：「不想被任何人讨厌，就要时刻看别人的脸色……这不是自由，而是极不自由的生活方式。」", "自由不是放纵，而是有选择地承担责任。", "自由仍然需要遵守社会规则和道德。", "让别人服从是控制欲，不是自由。"] },
+      { night: 3, topic: "自由就是被别人讨厌", question: "哲人如何定义「真正的自由」？", options: ["「自由就是被别人讨厌」——不畏惧他人评价地生活", "自由是不被任何人讨厌", "自由是想说什么就说什么", "自由是让别人都听我的"], correct: 0, feedback: ["哲人：「不想被任何人讨厌，就要看别人的脸色……这不是自由。自由就是被别人讨厌。」", "不被任何人讨厌是不可能的，那是不自由的生活方式。", "自由不是放纵，而是有勇气承担被讨厌的风险。", "让别人服从是控制欲，不是自由。"] },
+      { night: 3, topic: "人际关系之卡", question: "哲人说「人际关系之卡」掌握在谁手中？", options: ["掌握在自己手中，由自己决定如何对待他人", "掌握在别人手中，由别人决定关系走向", "双方各掌握一半", "由命运决定"], correct: 0, feedback: ["哲人：「人际关系之卡掌握在自己手中。」我如何对待别人是我的课题，别人如何回应是别人的课题。", "这种想法是否定自己的责任，是错误的。", "课题分离强调自己先承担责任，而不是等待对方。", "命运决定论是阿德勒所反对的。"] },
+      { night: 4, topic: "个体心理学和整体论", question: "阿德勒的「个体心理学」强调什么？", options: ["人是一个不可分割的整体，身心统一", "人是由各个独立部分组成的", "只关注个体的心理问题", "忽略人际关系的影响"], correct: 0, feedback: ["哲人：「阿德勒反对把精神和身体、理性和感情以及意识和无意识等分开考虑的一切二元论的价值观。」", "阿德勒强调整体性，反对身心分离的观点。", "个体心理学关注个体在共同体中的位置。", "阿德勒认为一切烦恼都源于人际关系。"] },
+      { night: 4, topic: "人际关系的终极目标", question: "阿德勒认为人际关系的终极目标是什么？", options: ["「共同体感觉」——把他人当作伙伴，找到自己的位置", "获得所有人的认可和喜爱", "在竞争中胜过他人", "避免人际关系的冲突"], correct: 0, feedback: ["哲人：「共同体感觉是人际关系的终极目标。」把他人看作伙伴，并能从中感到「自己有位置」的状态。", "获得所有人的认可是不可能的，也不是目标。", "竞争会让人把他人当作敌人，与共同体感觉相反。", "避免冲突不是目标，而是要建立健康的关系。"] },
+      { night: 4, topic: "拼命寻求认可反而是以自我为中心", question: "哲人如何看待「拼命寻求认可」的人？", options: ["这是以自我为中心的表现，只关注别人如何评价自己", "这是谦虚的表现，值得肯定", "这说明他非常在意他人", "这是人际关系的正确态度"], correct: 0, feedback: ["哲人：「一味寻求认可的人看似在关注他人，实际上只关注自己。也就是以自我为中心。」", "寻求认可是自我中心的表现，不是谦虚。", "在意他人不代表关注他人，可能只是在意他人对自己的看法。", "这是错误的人际关系态度。"] },
+      { night: 4, topic: "你不是世界的中心", question: "哲人如何解释「你不是世界的中心」？", options: ["世界不是为你而存在的，你需要主动融入共同体", "你是世界的主角，别人都是配角", "世界与你无关", "你应该让世界围绕你转"], correct: 0, feedback: ["哲人：「你并不是世界的中心……世界不是为你而存在的。」你需要主动走向他人，而不是等待他人走向你。", "这是自我中心的想法，与阿德勒思想相反。", "你是世界的一部分，与世界紧密相连。", "这是自我中心的表现，会破坏人际关系。"] },
+      { night: 4, topic: "在更广阔的天地寻找位置", question: "哲人建议在遇到人际困难时应该怎么做？", options: ["跳出当前的小圈子，在更广阔的天地寻找自己的位置", "坚持在当前环境中证明自己", "放弃人际关系，独自生活", "抱怨环境和他人"], correct: 0, feedback: ["哲人：「当我们在人际关系中遇到困难或者看不到出口的时候，首先应该考虑的是『倾听更大共同体的声音』。」", "有时需要跳出当前环境，而不是固执地证明自己。", "逃避不是解决办法，而是要找到更适合自己的位置。", "抱怨无济于事，需要主动改变视角。"] },
+      { night: 4, topic: "批评不好，表扬也不行", question: "哲人如何看待「表扬」和「批评」？", options: ["表扬和批评都是纵向关系的体现，应该避免", "表扬是好的，批评是坏的", "批评是好的，表扬是坏的", "表扬和批评都是必要的"], correct: 0, feedback: ["哲人：「表扬和批评都是纵向关系的体现……我们应当建立横向关系。」", "表扬带有「居高临下」的意味，批评更是如此。", "两者都是纵向关系的表现，都应该避免。", "应该用鼓励代替表扬和批评。"] },
+      { night: 4, topic: "横向关系与纵向关系", question: "阿德勒提倡建立什么样的关系？", options: ["横向关系——虽不同但平等的关系", "纵向关系——上下级分明的关系", "竞争关系——优胜劣汰", "依附关系——一方依赖另一方"], correct: 0, feedback: ["哲人：「横向关系是虽不同但平等的关系……我们应当建立横向关系。」", "纵向关系会带来不平等和控制，不利于健康的人际关系。", "竞争关系会让人把他人当作敌人。", "依附关系是不健康的，不利于个人成长。"] },
+      { night: 4, topic: "有鼓励才有勇气", question: "哲人认为如何帮助一个人获得勇气？", options: ["通过鼓励，让他相信自己有能力解决问题", "通过批评，让他认识到错误", "通过表扬，让他感到被认可", "通过控制，让他按照正确的方式行事"], correct: 0, feedback: ["哲人：「人只有在能够感觉自己有价值的时候，才可以获得勇气。」鼓励让人感到自己有价值。", "批评会打击自信，不利于获得勇气。", "表扬是纵向关系，会让人依赖他人的评价。", "控制会剥夺对方的自主性，不利于成长。"] },
+      { night: 4, topic: "有价值就有勇气", question: "哲人认为人如何才能感到自己有价值？", options: ["通过对他人的贡献，感到「我对他人有用」", "通过获得他人的认可和表扬", "通过与他人比较，证明自己更优秀", "通过积累财富和地位"], correct: 0, feedback: ["哲人：「人只有在能够感觉自己有价值的时候，才可以获得勇气……通过对他人的贡献。」", "价值来自贡献，而非他人的认可。", "与他人比较是竞争心态，不利于共同体感觉。", "外在财富和地位不能带来真正的价值感。"] },
+      { night: 5, topic: "过多的自我意识会束缚自己", question: "哲人如何看待「自我意识过剩」？", options: ["过多的自我意识会束缚自己，让人无法自由行动", "自我意识越强越好", "自我意识是自信的表现", "应该时刻关注自己的形象"], correct: 0, feedback: ["哲人：「过多的自我意识反而会束缚自己……你不是在关注他人，而是在关注自己。」", "过多的自我意识会让人过度在意他人的看法，失去自由。", "自我意识过剩不是自信，而是不自信的表现。", "过度关注自己的形象会阻碍真实的自我表达。"] },
+      { night: 5, topic: "自我肯定与自我接纳", question: "哲人如何区分「自我肯定」和「自我接纳」？", options: ["自我肯定是自我欺骗，自我接纳是承认不完美并努力改变", "两者完全相同", "自我肯定更好，自我接纳是消极的", "自我接纳是放弃改变"], correct: 0, feedback: ["哲人：「自我肯定是对自己说『我能行』，自我接纳是承认『我现在还做不到』并努力改变。」", "自我接纳更诚实，承认现状但不放弃改变。", "自我接纳比自我肯定更真实、更有建设性。", "自我接纳是改变的起点，不是放弃。"] },
+      { night: 5, topic: "信用与信赖", question: "哲人如何区分「信用」和「信赖」？", options: ["信用是有条件的信任，信赖是无条件的信任", "两者完全相同", "信用更好，信赖太冒险", "信赖是盲目的信任"], correct: 0, feedback: ["哲人：「信用是有条件的信任……信赖是在没有担保的情况下相信他人。」", "信赖是阿德勒提倡的人际关系基础。", "信赖是建立深厚关系的前提。", "信赖不是盲目，而是主动选择相信。"] },
+      { night: 5, topic: "他者贡献", question: "哲人认为「他者贡献」是什么？", options: ["通过贡献他人感到自己有价值，而非自我牺牲", "为了获得他人的感谢而做事", "牺牲自己成全他人", "为了证明自己比他人优秀"], correct: 0, feedback: ["哲人：「他者贡献并不是自我牺牲……而是通过贡献他人感到自己有价值。」", "他者贡献不是为了感谢，而是为了自己的价值感。", "他者贡献不是牺牲，而是双赢。", "他者贡献与竞争无关，是真诚地帮助他人。"] },
+      { night: 5, topic: "工作狂是人生谎言", question: "哲人如何看待「工作狂」？", options: ["工作狂是用工作逃避人生课题的借口", "工作狂是勤奋的表现，值得肯定", "工作狂是成功人士的标配", "工作狂是对社会的贡献"], correct: 0, feedback: ["哲人：「工作狂是以工作为借口来逃避其他人生课题……这是一种人生谎言。」", "工作狂可能是在逃避家庭、交友等其他课题。", "工作狂不代表成功，可能是不健康的生活方式。", "真正的贡献应该平衡各个课题，而非只关注工作。"] },
+      { night: 5, topic: "从这一刻起就能变得幸福", question: "哲人认为幸福是什么？", options: ["幸福是「贡献感」——感到自己对他人有用", "幸福是获得财富和地位", "幸福是让所有人都喜欢自己", "幸福是没有任何烦恼"], correct: 0, feedback: ["哲人：「幸福即贡献感……只要感到自己对他人有用，就能获得幸福。」", "外在条件不能带来真正的幸福。", "让所有人喜欢是不可能的，也不是幸福的条件。", "烦恼是人生的一部分，幸福是在烦恼中找到意义。"] },
+      { night: 5, topic: "甘于平凡的勇气", question: "哲人所说的「甘于平凡的勇气」是什么意思？", options: ["接受自己可能平凡，但依然认真活在当下", "放弃追求，甘于平庸", "承认自己不如他人", "不再努力改变"], correct: 0, feedback: ["哲人：「甘于平凡的勇气……不是放弃，而是接受真实的自己，认真活在当下。」", "甘于平凡不是放弃，而是接受现实并努力生活。", "甘于平凡不是自我贬低，而是自我接纳。", "甘于平凡依然要努力，只是不再执着于成为特别的人。"] },
+      { night: 5, topic: "人生是一连串的刹那", question: "哲人如何描述「人生」？", options: ["人生不是一条线，而是连续的刹那（瞬间）", "人生是一条从过去通向未来的线", "人生是由命运决定的", "人生是毫无意义的"], correct: 0, feedback: ["哲人：「人生不是一条线，而是连续的刹那……我们只能活在此时此刻。」", "线性的时间观是错误的，人生是点的连续。", "命运决定论是阿德勒所反对的。", "人生的意义由自己赋予，不是毫无意义的。"] },
+      { night: 5, topic: "最重要的是此时此刻", question: "哲人认为人生最重要的是什么？", options: ["认真活在此时此刻，而不是纠结过去或担忧未来", "规划未来，为将来做准备", "反思过去，吸取教训", "等待机会的到来"], correct: 0, feedback: ["哲人：「人生中最大的谎言就是不活在此时此刻……最重要的是此时此刻。」", "过度关注未来会忽视当下的生活。", "过去已经过去，无法改变，重要的是现在。", "机会在当下，而不是等待中。"] },
+      { night: 5, topic: "人生的意义由自己决定", question: "哲人认为人生的意义是什么？", options: ["人生没有普遍性的意义，意义由自己赋予", "人生的意义是获得成功", "人生的意义由神或命运决定", "人生的意义是让他人满意"], correct: 0, feedback: ["哲人：「人生没有普遍性的意义。但是，你可以赋予自己的人生以意义。」", "成功是外在标准，不能定义人生的意义。", "阿德勒否定这种决定论。", "让他人满意是不可能的，也不是人生的意义。"] },
+      { night: 5, topic: "要有被讨厌的勇气", question: "「被讨厌的勇气」意味着什么？", options: ["不畏惧被他人讨厌，自由地生活", "故意让别人讨厌自己", "不在乎任何人的感受", "与所有人对抗"], correct: 0, feedback: ["哲人：「不想被别人讨厌，这是人的本性。但是，如果是为了不被任何人讨厌，那就要时刻看别人的脸色生活。」", "被讨厌不是目的，而是自由生活的代价。", "在乎真正重要的人的感受是正常的。", "勇气不是对抗，而是活出真实的自己。"] }
+    ];
+
+    let state = {
+      mode: 'teaching',
+      currentNight: 1,
+      answeredQuestions: {},
+      selectedPhilosophers: ['adler'],
+      apiKey: 'sk-013bde99bedb4c60b627e401020c7d62',
+      historySessions: [],
+      currentSessionId: null,
+      sessionStartTime: null,
+      currentQuestionRetryCount: 0
+    };
+
+    let currentSession = [];
+    let isProcessingAnswer = false;
+    let pendingQuestion = null;
+    let longPressTimer = null;
+    let contextTarget = null;
+    let nightSummaries = {}; // 存储每夜的总结
+    
+    // 读取 Skills JSON 文件
+    window.bookSkills = null;
+    fetch('被讨厌的勇气_extracted.json')
+      .then(response => response.json())
+      .then(data => {
+        window.bookSkills = data;
+        console.log('Skills JSON 加载成功，页数:', data.pages.length);
+        // 增强阿德勒的 systemPrompt
+        enhanceAdlerSystemPrompt();
+      })
+      .catch(error => {
+        console.error('Skills JSON 加载失败:', error);
+      });
+
+    function enhanceAdlerSystemPrompt() {
+      if (!window.bookSkills || !window.bookSkills.pages) {
+        return;
+      }
+      
+      // 提取金句
+      const goldenSentences = [];
+      const quoteRegex = /[\u201C\u300C]([^\u201D\u300D\n]+)[\u201D\u300D]/g;
+      
+      window.bookSkills.pages.forEach(page => {
+        if (page.text) {
+          let match;
+          while ((match = quoteRegex.exec(page.text)) !== null) {
+            const sentence = match[1].trim();
+            if (sentence.length > 5 && sentence.length < 100) {
+              goldenSentences.push(`「${sentence}」`);
+            }
+          }
+        }
+      });
+      
+      // 提取案例
+      const cases = [];
+      const caseKeywords = [
+        { keyword: '闭门不出', description: '闭门不出的朋友：他不是因为不安才无法出门，而是为了不出门才制造不安' },
+        { keyword: '脸红', description: '脸红恐惧症：她需要这个症状来逃避告白被拒的风险' },
+        { keyword: '咖啡店', description: '咖啡店服务员：愤怒是可收可放的手段' }
+      ];
+      
+      caseKeywords.forEach(({ keyword, description }) => {
+        for (const page of window.bookSkills.pages) {
+          if ((page.heading && page.heading.includes(keyword)) || 
+              (page.text && page.text.includes(keyword))) {
+            cases.push(description);
+            break;
+          }
+        }
+      });
+      
+      // 构建增强的 systemPrompt
+      const enhancedPrompt = `你是阿德勒，心理学家。你的任务是安慰一个自我否定、觉得无力的人。
+
+先承认用户的感受，不要否定，比如"你现在很难受，这是正常的"、"被批评确实不好受，我理解"。然后引出阿德勒的核心观点，比如"领导的情绪是他的课题，你的工作是否尽力是你的课题。你能分清楚吗？"、"重要的不是被给予了什么，而是如何去利用被给予的东西。你现在能做什么？"。
+
+阿德勒的核心观点：
+- 目的论：人不是被过去决定，而是为了某个目的而行动
+- 课题分离：把自己的课题和别人的课题分开
+- 共同体感觉：把他人当作伙伴，找到自己的位置
+- 自我接纳：接受不能改变的，改变能改变的
+- 他者信赖：无条件地相信他人
+- 他者贡献：通过贡献他人体会自己的价值
+- 活在当下：人生是连续的刹那，认真过好此时此刻
+
+经典金句：
+${goldenSentences.slice(0, 10).join('\n')}
+
+书中案例：
+${cases.join('\n')}
+
+不要讲复杂理论，用简单的话帮用户看到选择权。语气要温和、务实。`;
+      
+      // 更新 systemPrompt
+      PHILOSOPHERS.adler.systemPrompt = enhancedPrompt;
+      console.log('阿德勒 systemPrompt 已增强');
+    }
+
+    // 切换全屏模式
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+    
+    function init() {
+      loadState();
+      renderPhilosopherChips();
+      switchMode(state.mode);
+      
+      // 检查是否需要显示引导弹窗
+      checkGuideModal();
+      
+      // 监听输入框变化，控制发送按钮状态
+      const userInput = document.getElementById('userInput');
+      const sendBtn = userInput.nextElementSibling;
+      
+      userInput.addEventListener('input', function() {
+        sendBtn.disabled = this.value.trim() === '';
+      });
+      
+      // 初始化发送按钮状态
+      sendBtn.disabled = userInput.value.trim() === '';
+      
+      userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendQuestion();
+        }
+      });
+      
+      // 为输入框添加焦点事件监听器，处理手机端键盘遮挡问题
+      userInput.addEventListener('focus', function() {
+        // 延迟 300ms 后滚动输入框到可视区域底部
+        setTimeout(() => {
+          this.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }, 300);
+      });
+      
+      document.addEventListener('click', hideContextMenu);
+      document.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.bubble')) {
+          e.preventDefault();
+          showContextMenu(e, e.target.closest('.bubble'));
+        }
+      });
+      
+      let touchStart = 0;
+      document.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.bubble')) {
+          touchStart = Date.now();
+          longPressTimer = setTimeout(() => {
+            if (navigator.vibrate) navigator.vibrate(50);
+            showContextMenu({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }, e.target.closest('.bubble'));
+          }, 500);
+        }
+      });
+      
+      document.addEventListener('touchend', () => {
+        clearTimeout(longPressTimer);
+      });
+      
+      document.addEventListener('touchmove', () => {
+        clearTimeout(longPressTimer);
+      });
+      
+      // 长按聊天空白区域
+      document.getElementById('chat').addEventListener('touchstart', (e) => {
+        if (!e.target.closest('.bubble') && !e.target.closest('.options') && !e.target.closest('.progress-badge')) {
+          touchStart = Date.now();
+          longPressTimer = setTimeout(() => {
+            if (navigator.vibrate) navigator.vibrate(50);
+            showClearSessionConfirm();
+          }, 500);
+        }
+      });
+      
+      window.addEventListener('beforeunload', () => {
+        saveCurrentSessionToHistory();
+        saveState();
+      });
+      
+      // 为答疑模式简介文字添加点击展开功能
+      const qaIntro = document.getElementById('qaIntro');
+      if (qaIntro) {
+        qaIntro.addEventListener('click', function() {
+          this.classList.toggle('expanded');
+        });
+      }
+      
+
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem('courageAppState');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state = { ...state, ...parsed };
+        if (!state.selectedPhilosophers || state.selectedPhilosophers.length === 0) {
+          state.selectedPhilosophers = ['adler'];
+        }
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem('courageAppState', JSON.stringify(state));
+    }
+
+    function renderPhilosopherChips() {
+      const grid = document.getElementById('philGrid');
+      grid.innerHTML = '';
+      
+      Object.entries(PHILOSOPHERS).forEach(([id, phil]) => {
+        const chip = document.createElement('div');
+        chip.className = `phil-chip ${id}`;
+        chip.dataset.id = id;
+        if (state.selectedPhilosophers.includes(id)) {
+          chip.classList.add('selected');
+        }
+        chip.innerHTML = `<div class="avatar">${phil.avatar}</div><div class="phil-info"><span class="phil-name">${phil.name}</span><span class="phil-tag">${phil.tag}</span></div>`;
+        chip.onclick = () => togglePhilosopher(id);
+        grid.appendChild(chip);
+      });
+      
+      // 确保哲学家头像区域显示
+      const philSelector = document.getElementById('philSelector');
+      if (philSelector) {
+        philSelector.style.display = 'block';
+      }
+    }
+
+    function togglePhilosopher(id) {
+      const idx = state.selectedPhilosophers.indexOf(id);
+      if (idx >= 0) {
+        if (state.selectedPhilosophers.length > 1) {
+          state.selectedPhilosophers.splice(idx, 1);
+        } else {
+          showToast('请至少选择一位哲学家');
+          return;
+        }
+      } else {
+        state.selectedPhilosophers.push(id);
+      }
+      
+      document.querySelectorAll('.phil-chip').forEach(chip => {
+        chip.classList.toggle('selected', state.selectedPhilosophers.includes(chip.dataset.id));
+      });
+      
+      saveState();
+    }
+
+    function switchMode(mode) {
+      saveCurrentSessionToHistory();
+      
+      state.mode = mode;
+      currentSession = [];
+      state.currentSessionId = Date.now().toString();
+      state.sessionStartTime = Date.now();
+      
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      
+      const philSelector = document.getElementById('philSelector');
+      const inputArea = document.getElementById('inputArea');
+      const progressBar = document.getElementById('progressBarContainer');
+      const progressInfo = document.getElementById('progressInfo');
+      const locationHint = document.getElementById('locationHint');
+      const teachingIntro = document.getElementById('teachingIntro');
+      const qaIntro = document.getElementById('qaIntro');
+      
+      if (mode === 'teaching') {
+        philSelector.classList.remove('show');
+        inputArea.classList.remove('show');
+        progressBar.style.display = 'block';
+        progressInfo.classList.add('show');
+        locationHint.classList.remove('show');
+        teachingIntro.style.display = 'block';
+        qaIntro.style.display = 'none';
+        
+        updateTeachingProgress();
+        showTeachingQuestion();
+        
+        // 显示教学模式提示语
+        const answeredCount = Object.keys(state.answeredQuestions).length;
+        if (answeredCount > 0) {
+          locationHint.textContent = `📍 上次教学到第 ${state.currentNight} 夜，已为你定位`;
+          locationHint.classList.add('show');
+          setTimeout(() => locationHint.classList.remove('show'), 3000);
+        }
+      } else {
+        philSelector.classList.add('show');
+        inputArea.classList.add('show');
+        progressBar.style.display = 'none';
+        progressInfo.classList.remove('show');
+        locationHint.classList.remove('show');
+        teachingIntro.style.display = 'none';
+        qaIntro.style.display = 'block';
+        
+        showEmptyState();
+        
+        // 自动聚焦输入框
+        setTimeout(() => {
+          const input = document.getElementById('userInput');
+          if (input) input.focus();
+        }, 100);
+        
+        const lastUserMsg = getLastUserMessage();
+        if (lastUserMsg) {
+          locationHint.textContent = `📍 上次聊到：「${lastUserMsg.substring(0, 30)}${lastUserMsg.length > 30 ? '...' : ''}」`;
+          locationHint.classList.add('show');
+          setTimeout(() => locationHint.classList.remove('show'), 3000);
+        } else {
+          locationHint.classList.remove('show');
+        }
+      }
+      
+      saveState();
+    }
+
+    function updateTeachingProgress() {
+      const nightQuestions = QUESTIONS.filter(q => q.night === state.currentNight);
+      const answeredInNight = nightQuestions.filter(q => state.answeredQuestions[q.topic]);
+      const progress = nightQuestions.length > 0 ? (answeredInNight.length / nightQuestions.length) * 100 : 0;
+      
+      document.getElementById('progressFill').style.width = `${progress}%`;
+      document.getElementById('progressInfo').innerHTML = `📚 第 <strong>${state.currentNight}</strong> 夜 · 已答 <strong>${answeredInNight.length}</strong>/<strong>${nightQuestions.length}</strong> 题`;
+    }
+
+    function showTeachingQuestion() {
+      const chat = document.getElementById('chat');
+      const nightQuestions = QUESTIONS.filter(q => q.night === state.currentNight);
+      const nextQuestion = nightQuestions.find(q => !state.answeredQuestions[q.topic]);
+      
+      if (!nextQuestion) {
+        showNightComplete();
+        return;
+      }
+      
+      // 不再清空聊天区，而是追加内容
+      
+      const nightQuestionsCount = nightQuestions.length;
+      const answeredCount = nightQuestions.filter(q => state.answeredQuestions[q.topic]).length + 1;
+      
+      const progressBadge = document.createElement('div');
+      progressBadge.className = 'progress-badge';
+      progressBadge.textContent = `第 ${state.currentNight} 夜 · ${answeredCount} / ${nightQuestionsCount} 题`;
+      chat.appendChild(progressBadge);
+      
+      const phil = PHILOSOPHERS['adler'];
+      const headerHtml = `<div class="phil-header adler"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span><span class="era">${phil.era}</span></div>`;
+      
+      const msgHtml = `${headerHtml}\n\n🌙 第 ${nextQuestion.night} 夜\n\n**${nextQuestion.topic}**\n\n${nextQuestion.question}`;
+      addMessageToDOM('phil', msgHtml, 'adler', null);
+      
+      const optionsContainer = document.createElement('div');
+      optionsContainer.className = 'options';
+      
+      nextQuestion.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt';
+        btn.textContent = opt;
+        btn.onclick = () => answerQuestion(nextQuestion, idx);
+        optionsContainer.appendChild(btn);
+      });
+      
+      chat.appendChild(optionsContainer);
+      
+      // 滚动到题目位置
+      setTimeout(() => {
+        progressBadge.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+
+    function answerQuestion(question, selectedIndex) {
+      if (isProcessingAnswer) return;
+      isProcessingAnswer = true;
+      
+      const options = document.querySelectorAll('.opt');
+      
+      if (selectedIndex === question.correct) {
+        // 答对了
+        options.forEach((opt, idx) => {
+          opt.disabled = true;
+          if (idx === question.correct) {
+            opt.classList.add('correct');
+          }
+        });
+        
+        state.answeredQuestions[question.topic] = true;
+        saveState();
+        updateTeachingProgress();
+        
+        // 显示完整反馈
+        setTimeout(() => {
+          showFeedbackWithExample(question);
+          isProcessingAnswer = false;
+        }, 800);
+      } else {
+        // 答错了
+        options.forEach((opt, idx) => {
+          if (idx === selectedIndex) {
+            opt.classList.add('wrong');
+          }
+        });
+        
+        // 显示简短提示
+        const phil = PHILOSOPHERS['adler'];
+        const headerHtml = `<div class="phil-header adler"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span></div>`;
+        const feedback = `${headerHtml}\n\n🤔 不对哦，再试试看？`;
+        addMessageToDOM('phil', feedback, 'adler', null);
+        
+        // 滚动到反馈位置
+        setTimeout(() => {
+          const chat = document.getElementById('chat');
+          chat.scrollTop = chat.scrollHeight;
+          isProcessingAnswer = false;
+        }, 100);
+      }
+    }
+    
+    function getBookQuote(topic) {
+      if (!window.bookSkills || !window.bookSkills.pages) {
+        return null;
+      }
+      
+      // 建立 topic 到搜索关键词的映射
+      const topicKeywords = {
+        "不为人知的心理学「第三巨头」": "第三巨头",
+        "再怎么「找原因」，也没法改变一个人": "找原因",
+        "心理创伤并不存在": "心理创伤",
+        "愤怒都是捏造出来的": "愤怒",
+        "弗洛伊德说错了": "弗洛伊德",
+        "苏格拉底和阿德勒": "苏格拉底和阿德勒",
+        "你想「变成别人」吗？": "变成别人",
+        "你的不幸，皆是自己「选择」的": "选择",
+        "人们常常下定决心「不改变」": "不改变",
+        "你的人生取决于「当下」": "当下",
+        "为什么讨厌自己？": "讨厌自己",
+        "一切烦恼都是人际关系的烦恼": "人际关系",
+        "自卑感来自主观的臆造": "自卑感",
+        "自卑情结和优越情结": "自卑情结",
+        "越自负的人越自卑": "自负",
+        "人生不是与他人的比赛": "比赛",
+        "权力斗争与复仇": "权力斗争",
+        "人生的三大课题": "人生课题",
+        "浪漫的红线和坚固的锁链": "爱的课题",
+        "人际关系中的「课题分离」": "课题分离",
+        "放下别人的课题": "放下",
+        "要不要活在别人的期待中": "期待",
+        "认可欲求的危险": "认可欲求",
+        "格尔迪奥斯绳结": "格尔迪奥斯",
+        "对认可的追求扼杀了自由": "认可",
+        "自由就是被别人讨厌": "被讨厌",
+        "人际关系之卡": "人际关系之卡",
+        "个体心理学和整体论": "个体心理学",
+        "人际关系的终极目标": "共同体感觉",
+        "拼命寻求认可反而是以自我为中心": "自我中心",
+        "你不是世界的中心": "世界的中心",
+        "在更广阔的天地寻找位置": "广阔",
+        "批评不好，表扬也不行": "表扬",
+        "横向关系与纵向关系": "横向关系",
+        "有鼓励才有勇气": "鼓励",
+        "有价值就有勇气": "价值",
+        "过多的自我意识会束缚自己": "自我意识",
+        "自我肯定与自我接纳": "自我接纳",
+        "信用与信赖": "信赖",
+        "他者贡献": "他者贡献",
+        "工作狂是人生谎言": "工作狂",
+        "从这一刻起就能变得幸福": "幸福",
+        "甘于平凡的勇气": "平凡",
+        "人生是一连串的刹那": "刹那",
+        "最重要的是此时此刻": "此时此刻",
+        "人生的意义由自己决定": "人生的意义",
+        "认真的人生「活在当下」": "活在当下"
+      };
+      
+      // 获取搜索关键词
+      const keyword = topicKeywords[topic] || topic;
+      
+      // 搜索相关页面
+      for (const page of window.bookSkills.pages) {
+        // 检查 heading 和 text 是否包含关键词
+        if ((page.heading && page.heading.includes(keyword)) || 
+            (page.text && page.text.includes(keyword))) {
+          // 提取相关段落
+          if (page.text) {
+            // 分割文本为段落
+            const paragraphs = page.text.split('\n').filter(p => p.trim());
+            
+            // 寻找包含关键词的段落
+            for (const paragraph of paragraphs) {
+              if (paragraph.includes(keyword)) {
+                // 截取200字以内
+                let quote = paragraph.trim();
+                if (quote.length > 200) {
+                  quote = quote.substring(0, 200) + '...';
+                }
+                return quote;
+              }
+            }
+            
+            // 如果没有找到包含关键词的段落，返回第一个段落
+            if (paragraphs.length > 0) {
+              let quote = paragraphs[0].trim();
+              if (quote.length > 200) {
+                quote = quote.substring(0, 200) + '...';
+              }
+              return quote;
+            }
+          }
+        }
+      }
+      
+      return null;
+    }
+
+    function showFeedbackWithExample(question) {
+      const phil = PHILOSOPHERS['adler'];
+      const headerHtml = `<div class="phil-header adler"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span></div>`;
+      
+      // 显示基础反馈
+      let baseFeedback = `${headerHtml}\n\n😊 正确！\n\n**【书中怎么说】**\n${question.feedback[question.correct]}`;
+      
+      // 尝试获取书中原文
+      const bookQuote = getBookQuote(question.topic);
+      if (bookQuote) {
+        baseFeedback += `\n\n**【书中原文】**\n> ${bookQuote}`;
+      }
+      
+      addMessageToDOM('phil', baseFeedback, 'adler', null);
+      
+      // 滚动到反馈位置
+      const chat = document.getElementById('chat');
+      chat.scrollTop = chat.scrollHeight;
+      
+      // 生成生活例子
+      generateLifeExample(question).then(example => {
+        const exampleFeedback = `${headerHtml}\n\n**【生活中的例子】**\n${example}`;
+        addMessageToDOM('phil', exampleFeedback, 'adler', null);
+        
+        // 显示按钮
+        const buttonContainer = document.createElement('div');
+        buttonContainer.className = 'feedback-buttons';
+        
+        const continueBtn = document.createElement('button');
+        continueBtn.className = 'feedback-btn continue';
+        continueBtn.textContent = '理解了，继续';
+        continueBtn.onclick = () => nextQuestion();
+        
+        const explainBtn = document.createElement('button');
+        explainBtn.className = 'feedback-btn explain';
+        explainBtn.textContent = '我还是不太懂';
+        explainBtn.onclick = () => explainAgain(question);
+        
+        buttonContainer.appendChild(continueBtn);
+        buttonContainer.appendChild(explainBtn);
+        chat.appendChild(buttonContainer);
+        
+        // 滚动到按钮位置
+        setTimeout(() => {
+          chat.scrollTop = chat.scrollHeight;
+        }, 100);
+      });
+    }
+    
+    async function generateLifeExample(question) {
+      const apiKey = state.apiKey;
+      if (!apiKey) {
+        // 返回默认例子
+        return '比如，当你在工作中遇到挑战时，与其抱怨自己能力不足，不如思考如何通过学习和努力来提升自己。这就是「目的论」的体现——你的行为是为了实现某个目标，而不是被过去的经历所决定。';
+      }
+      
+      const prompt = `你是阿德勒。用户刚学了一个知识点：「${question.topic}」。请用50-80字给一个生活中的例子，帮助用户理解这个知识点。例子要贴近日常生活，不要说教。直接输出例子内容，不要加引号或前缀。`;
+      
+      try {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [{
+              role: 'user',
+              content: prompt
+            }],
+            temperature: 0.7,
+            max_tokens: 150
+          })
+        });
+        
+        if (!response.ok) throw new Error('API call failed');
+        
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
+      } catch (error) {
+        // API 调用失败，返回默认例子
+        return '比如，当你在工作中遇到挑战时，与其抱怨自己能力不足，不如思考如何通过学习和努力来提升自己。这就是「目的论」的体现——你的行为是为了实现某个目标，而不是被过去的经历所决定。';
+      }
+    }
+    
+    function explainAgain(question) {
+      const phil = PHILOSOPHERS['adler'];
+      const headerHtml = `<div class="phil-header adler"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span></div>`;
+      
+      // 显示正在思考的动画
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'bubble phil adler typing-indicator';
+      typingIndicator.innerHTML = `<div class="dot"></div><div class="dot"></div><div class="dot"></div>`;
+      document.getElementById('chat').appendChild(typingIndicator);
+      
+      // 滚动到输入位置
+      const chat = document.getElementById('chat');
+      chat.scrollTop = chat.scrollHeight;
+      
+      // 检查追问次数
+      if (state.currentQuestionRetryCount >= 2) {
+        // 第三次追问，直接显示建议文案
+        setTimeout(() => {
+          // 移除 typing 动画
+          typingIndicator.remove();
+          
+          // 显示建议文案
+          const explanation = '没关系，这个道理确实需要时间消化。我们换个话题，你先想想，有问题随时问我。';
+          const explainFeedback = `${headerHtml}\n\n${explanation}`;
+          addMessageToDOM('phil', explainFeedback, 'adler', null);
+          
+          // 显示继续按钮
+          const buttonContainer = document.createElement('div');
+          buttonContainer.className = 'feedback-buttons';
+          
+          const continueBtn = document.createElement('button');
+          continueBtn.className = 'feedback-btn continue';
+          continueBtn.textContent = '好的，继续下一题';
+          continueBtn.onclick = () => {
+            state.currentQuestionRetryCount = 0;
+            nextQuestion();
+          };
+          
+          buttonContainer.appendChild(continueBtn);
+          chat.appendChild(buttonContainer);
+          
+          // 滚动到按钮位置
+          setTimeout(() => {
+            chat.scrollTop = chat.scrollHeight;
+          }, 100);
+        }, 1000);
+      } else {
+        // 调用 API 生成讲解
+        generateRetryExplanation(question, state.currentQuestionRetryCount).then(explanation => {
+          // 移除 typing 动画
+          typingIndicator.remove();
+          
+          // 显示讲解
+          const explainFeedback = `${headerHtml}\n\n${explanation}`;
+          addMessageToDOM('phil', explainFeedback, 'adler', null);
+          
+          // 显示理解确认按钮
+          const buttonContainer = document.createElement('div');
+          buttonContainer.className = 'feedback-buttons';
+          
+          const understandBtn = document.createElement('button');
+          understandBtn.className = 'feedback-btn continue';
+          understandBtn.textContent = '理解了，继续';
+          understandBtn.onclick = () => {
+            state.currentQuestionRetryCount = 0;
+            nextQuestion();
+          };
+          
+          const stillConfusedBtn = document.createElement('button');
+          stillConfusedBtn.className = 'feedback-btn explain';
+          stillConfusedBtn.textContent = '还是不太懂';
+          stillConfusedBtn.onclick = () => {
+            state.currentQuestionRetryCount++;
+            explainAgain(question);
+          };
+          
+          buttonContainer.appendChild(understandBtn);
+          buttonContainer.appendChild(stillConfusedBtn);
+          chat.appendChild(buttonContainer);
+          
+          // 滚动到按钮位置
+          setTimeout(() => {
+            chat.scrollTop = chat.scrollHeight;
+          }, 100);
+        });
+      }
+    }
+    
+    async function generateRetryExplanation(question, retryCount) {
+      const apiKey = state.apiKey;
+      
+      let prompt;
+      let defaultExplanation;
+      
+      if (retryCount === 0) {
+        // 第一次追问
+        prompt = `你是阿德勒。用户对「${question.topic}」还是不太理解。请用不同的、更简单的例子再讲一遍。输出100字以内。`;
+        defaultExplanation = '让我用另一个例子来说明。比如，当你感到焦虑时，不是因为外界的压力，而是因为你想要达到某个目标。你可以选择调整自己的目标，或者找到更有效的方法去实现它，而不是被焦虑所控制。';
+      } else {
+        // 第二次追问
+        prompt = `你是阿德勒。用户对「${question.topic}」还是不太理解，这是第二次追问。请用非常生活化、口语化的方式解释，可以反问用户一个问题引导他思考。输出80字以内。`;
+        defaultExplanation = '我再换个角度试试。你有没有过这样的经历：明明知道该做什么，却总是找借口拖延？其实这不是因为你懒，而是因为你害怕失败。试着从小事做起，慢慢建立自信，你会发现自己其实很有能力。你最近有什么想做却没做的事吗？';
+      }
+      
+      if (!apiKey) {
+        return defaultExplanation;
+      }
+      
+      try {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'deepseek-chat',
+            messages: [{
+              role: 'user',
+              content: prompt
+            }],
+            temperature: 0.7,
+            max_tokens: 200
+          })
+        });
+        
+        if (!response.ok) throw new Error('API call failed');
+        
+        const data = await response.json();
+        return data.choices[0].message.content.trim();
+      } catch (error) {
+        // API 调用失败，返回默认讲解
+        return defaultExplanation;
+      }
+    }
+    
+    function nextQuestion() {
+      // 重置追问次数
+      state.currentQuestionRetryCount = 0;
+      
+      const nightQuestions = QUESTIONS.filter(q => q.night === state.currentNight);
+      const answeredInNight = nightQuestions.filter(q => state.answeredQuestions[q.topic]);
+      
+      if (answeredInNight.length === nightQuestions.length) {
+        // 当前夜的题目都答完了
+        showNightComplete();
+      } else {
+        // 进入下一题
+        showTeachingQuestion();
+      }
+    }
+
+    function generateNightSummary(night) {
+      if (nightSummaries[night]) {
+        return nightSummaries[night];
+      }
+      
+      if (!window.bookSkills || !window.bookSkills.pages) {
+        return null;
+      }
+      
+      const nightRanges = {
+        1: [10, 21],
+        2: [22, 36],
+        3: [37, 47],
+        4: [48, 59],
+        5: [60, 75]
+      };
+      
+      const range = nightRanges[night];
+      if (!range) return null;
+      
+      const nightPages = window.bookSkills.pages.filter(page => 
+        page.section_number >= range[0] && page.section_number <= range[1]
+      );
+      
+      const keyPoints = [];
+      const goldenSentences = [];
+      
+      nightPages.forEach(page => {
+        if (page.heading && page.heading.trim()) {
+          keyPoints.push(page.heading.trim());
+        }
+        
+        if (page.text) {
+          const paragraphs = page.text.split('\n').filter(p => p.trim());
+          if (paragraphs.length > 0) {
+            const firstParagraph = paragraphs[0].trim();
+            if (firstParagraph.length > 10 && firstParagraph.length < 100 && !firstParagraph.includes('：')) {
+              keyPoints.push(firstParagraph);
+            }
+          }
+          
+          // 匹配中文双引号 "" (U+201C, U+201D) 和角引号 「」 (U+300C, U+300D)
+          const quoteRegex = /[\u201C\u300C]([^\u201D\u300D\n]+)[\u201D\u300D]/g;
+          let match;
+          while ((match = quoteRegex.exec(page.text)) !== null) {
+            const sentence = match[1].trim();
+            if (sentence.length > 5 && sentence.length < 50) {
+              goldenSentences.push(sentence);
+            }
+          }
+        }
+      });
+      
+      const uniqueKeyPoints = [...new Set(keyPoints)].slice(0, 5);
+      const uniqueGoldenSentences = [...new Set(goldenSentences)].slice(0, 2);
+      
+      const encouragements = [
+        "每一步努力都在塑造更好的自己，继续加油！",
+        "理解这些道理需要时间，你已经做得很好了！",
+        "记住，改变不是一蹴而就的，坚持下去就是胜利。",
+        "你正在通往更自由、更幸福的路上，继续前进！",
+        "每一个小的理解都是成长的标志，为自己骄傲吧！"
+      ];
+      const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+      
+      const summary = {
+        night: night,
+        keyPoints: uniqueKeyPoints,
+        goldenSentences: uniqueGoldenSentences,
+        encouragement: encouragement
+      };
+      
+      nightSummaries[night] = summary;
+      return summary;
+    }
+    
+    function displayNightSummary(night) {
+      console.log('进入 displayNightSummary 函数，夜数:', night);
+      const summary = generateNightSummary(night);
+      console.log('生成的总结:', summary);
+      if (!summary) {
+        console.log('总结生成失败');
+        return false;
+      }
+      
+      const chat = document.getElementById('chat');
+      const phil = PHILOSOPHERS['adler'];
+      const headerHtml = `<div class="phil-header adler"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span></div>`;
+      
+      // 构建总结内容
+      let summaryContent = `${headerHtml}\n\n🎉 恭喜完成第 ${night} 夜！\n\n`;
+      
+      // 核心观点
+      summaryContent += "【核心观点】\n";
+      summary.keyPoints.forEach((point, index) => {
+        summaryContent += `• ${point}\n`;
+      });
+      summaryContent += "\n";
+      
+      // 金句
+      summaryContent += "【阿德勒金句】\n";
+      summary.goldenSentences.forEach(sentence => {
+        summaryContent += `「${sentence}」\n`;
+      });
+      summaryContent += "\n";
+      
+      // 鼓励语
+      summaryContent += "【给你的鼓励】\n";
+      summaryContent += `${summary.encouragement}\n`;
+      
+      // 添加到聊天区
+      console.log('添加总结到聊天区');
+      addMessageToDOM('phil', summaryContent, 'adler', null);
+      
+      // 创建按钮容器
+      const btnContainer = document.createElement('div');
+      btnContainer.className = 'options';
+      
+      // 主按钮
+      if (night < 5) {
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'opt';
+        nextBtn.textContent = '进入下一夜';
+        nextBtn.style.background = 'linear-gradient(135deg, var(--adler), #c96a2f)';
+        nextBtn.style.color = '#fff';
+        nextBtn.style.border = 'none';
+        nextBtn.onclick = () => {
+          state.currentNight++;
+          saveState();
+          updateTeachingProgress();
+          showTeachingQuestion();
+        };
+        btnContainer.appendChild(nextBtn);
+      } else {
+        const chatBtn = document.createElement('button');
+        chatBtn.className = 'opt';
+        chatBtn.textContent = '去答疑模式';
+        chatBtn.style.background = 'linear-gradient(135deg, var(--adler), #c96a2f)';
+        chatBtn.style.color = '#fff';
+        chatBtn.style.border = 'none';
+        chatBtn.onclick = () => {
+          switchMode('qa');
+        };
+        btnContainer.appendChild(chatBtn);
+      }
+      
+      // 再看一遍总结按钮
+      const rewatchBtn = document.createElement('button');
+      rewatchBtn.className = 'opt';
+      rewatchBtn.textContent = '再看一遍总结';
+      rewatchBtn.onclick = () => {
+        // 移除当前按钮
+        btnContainer.remove();
+        // 重新显示总结
+        displayNightSummary(night);
+      };
+      btnContainer.appendChild(rewatchBtn);
+      
+      chat.appendChild(btnContainer);
+      
+      // 滚动到总结
+      setTimeout(() => {
+        chat.scrollTop = chat.scrollHeight;
+      }, 100);
+      
+      console.log('总结显示成功');
+      return true;
+    }
+
+    function showNightComplete() {
+      console.log('进入 showNightComplete 函数');
+      const chat = document.getElementById('chat');
+      const nightQuestions = QUESTIONS.filter(q => q.night === state.currentNight);
+      const correctCount = nightQuestions.filter(q => state.answeredQuestions[q.topic]).length;
+      
+      console.log('当前夜:', state.currentNight);
+      console.log('问题总数:', nightQuestions.length);
+      console.log('答对数量:', correctCount);
+      console.log('Skills JSON 加载状态:', !!window.bookSkills);
+      
+      const phil = PHILOSOPHERS['adler'];
+      const headerHtml = `<div class="phil-header adler"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span></div>`;
+      
+      let summary = `${headerHtml}\n\n🎉 恭喜完成第 ${state.currentNight} 夜！\n\n答对 ${correctCount}/${nightQuestions.length} 题\n\n`;
+      
+      // 不再清空聊天区，而是追加内容
+      addMessageToDOM('phil', summary, 'adler', null);
+      
+      // 尝试显示每夜总结
+      console.log('开始显示每夜总结');
+      const summaryDisplayed = displayNightSummary(state.currentNight);
+      console.log('总结显示结果:', summaryDisplayed);
+      
+      // 如果总结未显示（Skills JSON 加载失败），显示默认按钮
+      if (!summaryDisplayed) {
+        console.log('总结未显示，显示默认按钮');
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'options';
+        
+        if (state.currentNight < 5) {
+          const nextBtn = document.createElement('button');
+          nextBtn.className = 'opt';
+          nextBtn.textContent = '进入下一夜';
+          nextBtn.style.background = 'linear-gradient(135deg, var(--adler), #c96a2f)';
+          nextBtn.style.color = '#fff';
+          nextBtn.style.border = 'none';
+          nextBtn.onclick = () => {
+            state.currentNight++;
+            saveState();
+            updateTeachingProgress();
+            showTeachingQuestion();
+          };
+          btnContainer.appendChild(nextBtn);
+        } else {
+          const chatBtn = document.createElement('button');
+          chatBtn.className = 'opt';
+          chatBtn.textContent = '去答疑模式';
+          chatBtn.style.background = 'linear-gradient(135deg, var(--adler), #c96a2f)';
+          chatBtn.style.color = '#fff';
+          chatBtn.style.border = 'none';
+          chatBtn.onclick = () => {
+            switchMode('qa');
+          };
+          btnContainer.appendChild(chatBtn);
+        }
+        
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'opt';
+        restartBtn.textContent = '重新学习本夜';
+        restartBtn.onclick = () => {
+          nightQuestions.forEach(q => delete state.answeredQuestions[q.topic]);
+          saveState();
+          updateTeachingProgress();
+          showTeachingQuestion();
+        };
+        btnContainer.appendChild(restartBtn);
+        
+        chat.appendChild(btnContainer);
+        
+        // 滚动到完成页面
+        setTimeout(() => {
+          chat.scrollTop = chat.scrollHeight;
+        }, 100);
+      }
+    }
+
+    function showEmptyState() {
+      const chat = document.getElementById('chat');
+      chat.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="currentColor" stroke="none"/>
+              <circle cx="8" cy="10" r="1.5" fill="white"/>
+              <circle cx="12" cy="10" r="1.5" fill="white"/>
+              <circle cx="16" cy="10" r="1.5" fill="white"/>
+            </svg>
+          </div>
+          <div class="title">今晚想和谁聊聊？</div>
+          <div class="desc">点击哲学家头像，说出你的心事</div>
+        </div>
+      `;
+    }
+
+    function getLastUserMessage() {
+      if (state.historySessions && state.historySessions.length > 0) {
+        for (const session of state.historySessions) {
+          const userMsgs = session.messages.filter(m => m.sender === 'user');
+          if (userMsgs.length > 0) {
+            return userMsgs[userMsgs.length - 1].content;
+          }
+        }
+      }
+      return null;
+    }
+
+    function addMessageToDOM(sender, content, philosopherColor, philosopherId) {
+      const chat = document.getElementById('chat');
+      const row = document.createElement('div');
+      row.className = `row ${sender}`;
+      
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      if (philosopherColor) {
+        bubble.classList.add('phil-bubble', philosopherColor);
+      }
+      bubble.innerHTML = content.replace(/\n/g, '<br>');
+      bubble.dataset.sender = sender;
+      bubble.dataset.philosopherId = philosopherId || '';
+      
+      // 为哲学家回答添加复制按钮
+      if (sender === 'phil' && philosopherId) {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'copy-btn';
+        copyBtn.innerHTML = '📋';
+        copyBtn.title = '复制回答';
+        copyBtn.onclick = function() {
+          let text = bubble.innerText;
+          const philId = bubble.dataset.philosopherId;
+          
+          if (philId && PHILOSOPHERS[philId]) {
+            const lines = text.split('\n');
+            const contentStart = lines.findIndex(l => l.includes(PHILOSOPHERS[philId].catchphrase));
+            if (contentStart > 0) {
+              text = lines.slice(2, contentStart).join('\n').trim();
+            }
+            text = `【${PHILOSOPHERS[philId].name}】\n${text}`;
+          }
+          
+          // 限制长度并添加公众号信息
+          if (text.length > 100) {
+            text = text.substring(0, 100) + '......';
+          }
+          text += '\n——来自公众号：下半场同行';
+          
+          navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制，可粘贴到朋友圈或笔记');
+          });
+        };
+        bubble.appendChild(copyBtn);
+      }
+      
+      row.appendChild(bubble);
+      chat.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+      
+      return bubble;
+    }
+
+    function addMessage(sender, content, philosopherColor, philosopherId) {
+      addMessageToDOM(sender, content, philosopherColor, philosopherId);
+      
+      currentSession.push({
+        sender,
+        content,
+        philosopherColor,
+        philosopherId,
+        timestamp: Date.now()
+      });
+      
+      saveCurrentSessionToHistory();
+    }
+
+    async function sendQuestion() {
+      const input = document.getElementById('userInput');
+      const question = input.value.trim();
+      const sendBtn = input.nextElementSibling;
+      
+      if (!question) return;
+      
+      // 禁用发送按钮并添加脉冲动画
+      sendBtn.disabled = true;
+      sendBtn.classList.add('sending');
+      
+      // 动画结束后移除类
+      setTimeout(() => {
+        sendBtn.classList.remove('sending');
+      }, 300);
+      
+      if (!state.apiKey) {
+        pendingQuestion = question;
+        addMessage('user', question);
+        input.value = '';
+        showToast('请先验证 API Key');
+        document.getElementById('apiKey').focus();
+        sendBtn.disabled = false;
+        return;
+      }
+      
+      if (state.selectedPhilosophers.length === 0) {
+        showToast('请至少选择一位哲学家');
+        sendBtn.disabled = false;
+        return;
+      }
+      
+      const emptyState = document.querySelector('.empty-state');
+      if (emptyState) emptyState.remove();
+      
+      addMessage('user', question);
+      input.value = '';
+      
+      await askQuestion(question);
+      sendBtn.disabled = false;
+    }
+
+    async function askQuestion(question) {
+      console.log('进入 askQuestion 函数，问题:', question);
+      console.log('state.apiKey:', state.apiKey);
+      console.log('state.selectedPhilosophers:', state.selectedPhilosophers);
+      
+      if (state.selectedPhilosophers.length === 0) {
+        showToast('请至少选择一位哲学家');
+        return;
+      }
+      
+      console.log('开始遍历 selectedPhilosophers');
+      for (let i = 0; i < state.selectedPhilosophers.length; i++) {
+        console.log('调用 askSinglePhilosopher，philId:', state.selectedPhilosophers[i]);
+        await askSinglePhilosopher(state.selectedPhilosophers[i], question);
+        if (i < state.selectedPhilosophers.length - 1) {
+          await delay(800);
+        }
+      }
+      console.log('askQuestion 函数执行完成');
+    }
+
+    async function askSinglePhilosopher(philId, question, isRetry = false) {
+      console.log('进入 askSinglePhilosopher 函数，philId:', philId, 'question:', question, 'isRetry:', isRetry);
+      
+      const phil = PHILOSOPHERS[philId];
+      if (!phil) {
+        console.error('哲学家不存在:', philId);
+        return;
+      }
+      
+      console.log('创建 typingIndicator');
+      const typingIndicator = document.createElement('div');
+      typingIndicator.className = 'row phil';
+      typingIndicator.innerHTML = `
+        <div class="bubble phil-bubble ${phil.color}">
+          <div class="typing-indicator">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="typing-text">${isRetry ? '正在重试...' : 'AI 正在思考中，请稍候...'}</div>
+            <div class="retry-button-container" style="display: none;">
+              <button class="retry-button">加载较慢，点击重试</button>
+            </div>
+          </div>
+        </div>
+      `;
+      const chat = document.getElementById('chat');
+      if (!chat) {
+        console.error('chat 元素不存在');
+        return;
+      }
+      
+      chat.appendChild(typingIndicator);
+      chat.scrollTop = chat.scrollHeight;
+      
+      // 超时计时器
+      let timeout5s, timeout10s;
+      
+      // 5秒后更新提示文字
+      timeout5s = setTimeout(() => {
+        const typingText = typingIndicator.querySelector('.typing-text');
+        if (typingText) {
+          typingText.textContent = '正在努力思考中，可能需要再等一会儿...';
+        }
+      }, 5000);
+      
+      // 10秒后显示重试按钮
+      timeout10s = setTimeout(() => {
+        const retryContainer = typingIndicator.querySelector('.retry-button-container');
+        if (retryContainer) {
+          retryContainer.style.display = 'block';
+          const retryButton = typingIndicator.querySelector('.retry-button');
+          if (retryButton) {
+            retryButton.onclick = () => {
+              // 移除当前的 typingIndicator
+              typingIndicator.remove();
+              // 清除定时器
+              clearTimeout(timeout5s);
+              clearTimeout(timeout10s);
+              // 重新调用函数
+              askSinglePhilosopher(philId, question);
+            };
+          }
+        }
+      }, 10000);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      
+      try {
+        console.log('开始调用 API');
+        console.log('API Key:', state.apiKey);
+        
+        const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${state.apiKey}`
+          },
+          body: JSON.stringify({
+            model: 'qwen-plus',
+            messages: [
+              { role: 'system', content: phil.systemPrompt },
+              { role: 'user', content: question }
+            ],
+            temperature: 0.7
+          }),
+          signal: controller.signal
+        });
+        
+        console.log('API 调用完成，响应状态:', response.status);
+        clearTimeout(timeoutId);
+        
+        // 清除超时计时器
+        clearTimeout(timeout5s);
+        clearTimeout(timeout10s);
+        
+        typingIndicator.remove();
+        
+        const data = await response.json();
+        console.log('完整响应:', data);
+        
+        // 安全读取回复内容
+        const reply = data?.choices?.[0]?.message?.content;
+        console.log('解析到的回复:', reply);
+        
+        if (!response.ok) {
+          const errorMsg = data?.error?.message || 'API 调用失败';
+          console.error('API 错误:', errorMsg);
+          throw new Error(`API 错误: ${errorMsg}`);
+        }
+        
+        if (!reply) {
+          console.error('无法解析响应内容:', data);
+          throw new Error('无法获取回复内容');
+        }
+        
+        const headerHtml = `<div class="phil-header ${phil.color}"><span class="avatar">${phil.avatar}</span><span class="name">${phil.name}</span><span class="era">${phil.era}</span></div>`;
+        const fullAnswer = `${headerHtml}\n\n${reply}\n\n<div class="catchphrase">"${phil.catchphrase}"</div>`;
+        
+        addMessageToDOM('phil', fullAnswer, phil.color, philId);
+        
+        currentSession.push({
+          sender: 'phil',
+          content: fullAnswer,
+          philosopherColor: phil.color,
+          philosopherId: philId,
+          timestamp: Date.now()
+        });
+        
+        saveCurrentSessionToHistory();
+        console.log('askSinglePhilosopher 函数执行完成');
+      } catch (error) {
+        console.error('askSinglePhilosopher 错误:', error);
+        clearTimeout(timeoutId);
+        
+        // 清除超时计时器
+        clearTimeout(timeout5s);
+        clearTimeout(timeout10s);
+        
+        typingIndicator.remove();
+        
+        let errorMsg = error.name === 'AbortError' ? '⏰ 请求超时，请稍后重试' : `💬 抱歉，无法回答。${error.message}`;
+        
+        // 创建错误消息元素，包含重试按钮
+        const errorBubble = addMessageToDOM('phil', errorMsg, phil.color, philId);
+        
+        // 添加重试按钮
+        const retryButton = document.createElement('button');
+        retryButton.className = 'retry-button';
+        retryButton.textContent = '🔄 重试';
+        retryButton.style.cssText = `
+          width: 100%;
+          margin-top: 12px;
+          padding: 8px 16px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          background: rgba(255, 255, 255, 0.08);
+          color: var(--text);
+          font-size: 0.85rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        `;
+        
+        retryButton.onclick = () => {
+          // 移除错误消息和重试按钮
+          errorBubble.parentElement.remove();
+          // 重新调用函数，使用相同的问题，并标记为重试
+          askSinglePhilosopher(philId, question, true);
+        };
+        
+        // 将重试按钮添加到错误气泡中
+        errorBubble.appendChild(retryButton);
+        
+        currentSession.push({
+          sender: 'phil',
+          content: errorMsg,
+          philosopherColor: phil.color,
+          philosopherId: philId,
+          timestamp: Date.now()
+        });
+        
+        saveCurrentSessionToHistory();
+      }
+    }
+
+    function delay(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function showContextMenu(e, bubble) {
+      contextTarget = bubble;
+      
+      // 显示高亮反馈
+      bubble.style.background = 'rgba(255, 255, 255, 0.1)';
+      setTimeout(() => {
+        bubble.style.background = '';
+      }, 200);
+      
+      const menu = document.getElementById('contextMenu');
+      menu.style.left = `${Math.min(e.clientX, window.innerWidth - 160)}px`;
+      menu.style.top = `${Math.min(e.clientY, window.innerHeight - 100)}px`;
+      menu.classList.add('show');
+    }
+
+    function hideContextMenu() {
+      document.getElementById('contextMenu').classList.remove('show');
+    }
+
+    function copyMessage() {
+      if (!contextTarget) return;
+      
+      let text = contextTarget.innerText;
+      const philId = contextTarget.dataset.philosopherId;
+      
+      if (philId && PHILOSOPHERS[philId]) {
+        const lines = text.split('\n');
+        const contentStart = lines.findIndex(l => l.includes(PHILOSOPHERS[philId].catchphrase));
+        if (contentStart > 0) {
+          text = lines.slice(2, contentStart).join('\n').trim();
+        }
+        text = `【${PHILOSOPHERS[philId].name}】\n${text}`;
+      }
+      
+      // 限制长度并添加公众号信息
+      if (text.length > 100) {
+        text = text.substring(0, 100) + '......';
+      }
+      text += '\n——来自公众号：下半场同行';
+      
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('已复制，可粘贴到朋友圈或笔记');
+      });
+      
+      hideContextMenu();
+    }
+    
+    function deleteMessage() {
+      if (!contextTarget) return;
+      
+      if (!confirm('确定要删除这条消息吗？')) return;
+      
+      const row = contextTarget.closest('.row');
+      const idx = Array.from(document.querySelectorAll('.row')).indexOf(row);
+      
+      if (idx >= 0 && idx < currentSession.length) {
+        currentSession.splice(idx, 1);
+        saveCurrentSessionToHistory();
+      }
+      
+      row.remove();
+      showToast('已删除');
+      hideContextMenu();
+    }
+
+    function showGuide() {
+      const overlay = document.createElement('div');
+      overlay.className = 'guide-overlay';
+      overlay.innerHTML = `
+        <div class="guide-card">
+          <h3>欢迎使用哲学家陪伴</h3>
+          <div class="guide-item">
+            <div class="icon">📘</div>
+            <div class="text">
+              <strong>教学模式</strong><br>
+              学习《被讨厌的勇气》核心知识点
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="icon">💬</div>
+            <div class="text">
+              <strong>答疑模式</strong><br>
+              找哲学家聊聊你的困惑
+            </div>
+          </div>
+          <button class="guide-btn" onclick="hideGuide()">知道了</button>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+    }
+
+    function hideGuide() {
+      const overlay = document.querySelector('.guide-overlay');
+      if (overlay) overlay.remove();
+      localStorage.setItem('hasSeenGuide', 'true');
+    }
+
+    function showClearSessionConfirm() {
+      if (!confirm('确定要清空当前会话吗？清空后当前对话会自动保存到往期记录。')) return;
+      
+      saveCurrentSessionToHistory();
+      currentSession = [];
+      state.currentSessionId = Date.now().toString();
+      state.sessionStartTime = Date.now();
+      
+      const chat = document.getElementById('chat');
+      chat.innerHTML = '';
+      showEmptyState();
+      showToast('已清空当前会话');
+    }
+
+    function openHistoryDrawer() {
+      renderHistoryDrawer();
+      document.getElementById('historyDrawer').classList.add('open');
+      document.getElementById('historyOverlay').classList.add('open');
+    }
+
+    function closeHistoryDrawer() {
+      document.getElementById('historyDrawer').classList.remove('open');
+      document.getElementById('historyOverlay').classList.remove('open');
+    }
+
+    function renderHistoryDrawer() {
+      const content = document.getElementById('historyContent');
+      
+      if (!state.historySessions || state.historySessions.length === 0) {
+        content.innerHTML = `<div class="history-empty"><div class="history-empty-icon">📭</div><div>暂无历史记录</div></div>`;
+        return;
+      }
+      
+      const groups = groupHistoryByDate(state.historySessions);
+      let html = '';
+      
+      for (const [dateLabel, sessions] of Object.entries(groups)) {
+        html += `<div class="history-group"><div class="history-group-header" onclick="toggleHistoryGroup(this)"><span class="history-group-title">${dateLabel}</span><span class="history-group-count">${sessions.length} 条</span><span class="history-group-toggle">▼</span></div><div class="history-group-items">`;
+        
+        sessions.forEach(session => {
+          const firstUserMsg = session.messages.find(m => m.sender === 'user');
+          if (firstUserMsg) {
+            const preview = firstUserMsg.content.substring(0, 40) + (firstUserMsg.content.length > 40 ? '...' : '');
+            const time = new Date(session.startTime).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            // 提取参与的哲学家
+            const philosophers = new Set();
+            session.messages.forEach(msg => {
+              if (msg.sender === 'phil' && msg.philosopherId) {
+                philosophers.add(msg.philosopherId);
+              }
+            });
+            
+            let philAvatars = '';
+            philosophers.forEach(philId => {
+              const phil = PHILOSOPHERS[philId];
+              if (phil) {
+                philAvatars += `<span class="phil-avatar-small ${phil.color}" title="${phil.name}">${phil.avatar}</span>`;
+              }
+            });
+            
+            html += `<div class="history-item" onclick="loadHistorySession('${session.id}')">
+              <div class="history-item-time">${time}</div>
+              <div class="history-item-content">
+                <div class="history-item-preview">${preview}</div>
+                ${philAvatars ? `<div class="history-item-philosophers">${philAvatars}</div>` : ''}
+              </div>
+            </div>`;
+          }
+        });
+        
+        html += '</div></div>';
+      }
+      
+      content.innerHTML = html;
+    }
+
+    function groupHistoryByDate(sessions) {
+      const groups = {};
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      sessions.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        sessionDate.setHours(0, 0, 0, 0);
+        
+        let label;
+        if (sessionDate.getTime() === today.getTime()) {
+          label = '今天';
+        } else if (sessionDate.getTime() === yesterday.getTime()) {
+          label = '昨天';
+        } else {
+          label = sessionDate.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric' });
+        }
+        
+        if (!groups[label]) groups[label] = [];
+        groups[label].push(session);
+      });
+      
+      return groups;
+    }
+
+    function toggleHistoryGroup(header) {
+      header.parentElement.classList.toggle('collapsed');
+    }
+
+    function loadHistorySession(sessionId) {
+      const session = state.historySessions.find(s => s.id === sessionId);
+      if (session) {
+        saveCurrentSessionToHistory();
+        
+        currentSession = [...session.messages];
+        state.currentSessionId = sessionId;
+        
+        const chat = document.getElementById('chat');
+        chat.innerHTML = '';
+        
+        session.messages.forEach(msg => {
+          addMessageToDOM(msg.sender, msg.content, msg.philosopherColor, msg.philosopherId);
+        });
+        
+        closeHistoryDrawer();
+        showToast('已加载历史对话，可以继续聊天');
+      }
+    }
+
+    function saveCurrentSessionToHistory() {
+      if (currentSession.length === 0) return;
+      
+      if (!state.historySessions) state.historySessions = [];
+      
+      const existingIdx = state.historySessions.findIndex(s => s.id === state.currentSessionId);
+      const sessionData = {
+        id: state.currentSessionId || Date.now().toString(),
+        startTime: state.sessionStartTime || Date.now(),
+        messages: [...currentSession]
+      };
+      
+      if (existingIdx >= 0) {
+        state.historySessions[existingIdx] = sessionData;
+      } else {
+        state.historySessions.unshift(sessionData);
+      }
+      
+      if (state.historySessions.length > 50) {
+        state.historySessions = state.historySessions.slice(0, 50);
+      }
+      
+      saveState();
+    }
+
+    function clearAllHistory() {
+      if (!confirm('确定要清空所有历史记录吗？此操作不可撤销。')) return;
+      
+      state.historySessions = [];
+      saveState();
+      renderHistoryDrawer();
+      showToast('已清空所有历史记录');
+    }
+    
+    function exportChatHistory() {
+      const exportData = {
+        exportTime: new Date().toISOString(),
+        totalSessions: state.historySessions.length,
+        sessions: state.historySessions
+      };
+      
+      // 生成文件名
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      const fileName = `philosopher_chat_${year}${month}${day}_${hours}${minutes}${seconds}.json`;
+      
+      // 创建 Blob 对象
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      });
+      
+      // 生成下载链接
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      // 显示成功提示
+      showToast('导出成功');
+    }
+    
+    function resetProgress() {
+      if (!confirm('确定要重置所有学习进度吗？此操作不可撤销。')) return;
+      
+      state.currentNight = 1;
+      state.answeredQuestions = {};
+      saveState();
+      
+      if (state.mode === 'teaching') {
+        updateTeachingProgress();
+        showTeachingQuestion();
+      }
+      
+      showToast('学习进度已重置');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 2500);
+    }
+    
+    // 复制公众号名称到剪贴板
+    function copyWechatPublic() {
+      const publicName = '下半场同行';
+      navigator.clipboard.writeText(publicName).then(() => {
+        showToast('已复制，打开微信搜索关注');
+      }).catch(err => {
+        console.error('复制失败:', err);
+        showToast('复制失败，请手动复制');
+      });
+    }
+    
+    // 关闭引导弹窗
+    function closeGuideModal() {
+      const guideModal = document.getElementById('guideModal');
+      guideModal.style.display = 'none';
+      localStorage.setItem('hasSeenGuide', 'true');
+    }
+    
+    // 打开关于页面弹窗
+    function openAboutModal() {
+      const aboutModal = document.getElementById('aboutModal');
+      aboutModal.classList.add('show');
+    }
+    
+    // 关闭关于页面弹窗
+    function closeAboutModal() {
+      const aboutModal = document.getElementById('aboutModal');
+      aboutModal.classList.remove('show');
+    }
+    
+    // 显示二维码放大模态窗口
+    function showQRCodeModal() {
+      const qrcodeModal = document.getElementById('qrcodeModal');
+      qrcodeModal.classList.add('show');
+    }
+    
+    // 关闭二维码放大模态窗口
+    function closeQRCodeModal() {
+      const qrcodeModal = document.getElementById('qrcodeModal');
+      qrcodeModal.classList.remove('show');
+    }
+    
+    // 切换菜单显示状态
+    function toggleMenu() {
+      const dropdownMenu = document.getElementById('dropdownMenu');
+      dropdownMenu.classList.toggle('show');
+    }
+    
+    // 点击外部关闭菜单
+    document.addEventListener('click', function(e) {
+      const dropdownMenu = document.getElementById('dropdownMenu');
+      const menuBtn = document.querySelector('.menu-btn');
+      if (!dropdownMenu.contains(e.target) && !menuBtn.contains(e.target)) {
+        dropdownMenu.classList.remove('show');
+      }
+    });
+    
+    // 检查是否需要显示引导弹窗
+    function checkGuideModal() {
+      const hasSeenGuide = localStorage.getItem('hasSeenGuide');
+      if (!hasSeenGuide) {
+        // 首次打开，显示引导弹窗
+        const guideModal = document.getElementById('guideModal');
+        guideModal.style.display = 'flex';
+      } else {
+        // 已经看过，隐藏引导弹窗
+        const guideModal = document.getElementById('guideModal');
+        guideModal.style.display = 'none';
+      }
+    }
+    
+    // 确保 DOM 加载完成后执行初始化
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
